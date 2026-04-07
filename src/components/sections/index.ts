@@ -1,0 +1,10 @@
+export { default as CaseStudiesSection } from "./CaseStudiesSection";
+export { default as ContactSection } from "./ContactSection";
+export { default as HeroSection } from "./HeroSection";
+export { default as HowItWorksSection } from "./HowItWorksSection";
+export { default as InsightsSection } from "./InsightsSection";
+export { default as PartnersSection } from "./PartnersSection";
+export { default as ProductProofSection } from "./ProductProofSection";
+export { default as SolutionsSection } from "./SolutionsSection";
+export { default as TrustSection } from "./TrustSection";
+export { default as WhoWeHelpSection } from "./WhoWeHelpSection";
