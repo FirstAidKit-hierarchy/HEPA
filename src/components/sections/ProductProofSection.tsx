@@ -1,28 +1,25 @@
-import hepaReports from "@/assets/images/hepa-reports.png";
 import { ProductPreviewCard, Reveal, SectionHeading } from "@/components/common";
-import { productProofContent } from "@/content/home";
+import { useSiteContent } from "@/components/providers";
 
-const previewImages: Record<string, string> = {
-  "hepa-reports": hepaReports,
-};
+const ProductProofSection = () => {
+  const {
+    siteContent: {
+      home: { productProof },
+    },
+  } = useSiteContent();
 
-const ProductProofSection = () => (
-  <section className="py-16 sm:py-20">
-    <div className="section-container">
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(280px,0.48fr)] lg:items-end">
-        <Reveal>
-          <SectionHeading
-            align="left"
-            eyebrow={productProofContent.eyebrow}
-            title={productProofContent.title}
-            description={productProofContent.description}
-          />
-        </Reveal>
+  return (
+    <section className="py-16 sm:py-20">
+      <div className="section-container">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(280px,0.48fr)] lg:items-end">
+          <Reveal>
+            <SectionHeading align="left" eyebrow={productProof.eyebrow} title={productProof.title} description={productProof.description} />
+          </Reveal>
         <Reveal delay={140}>
           <div className="rounded-[1.8rem] border border-border/70 bg-background/85 p-5 shadow-[0_18px_44px_rgba(15,23,42,0.08)]">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-accent-blue">Designed for easy asset replacement</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-accent-blue">{productProof.supportingPanelEyebrow}</p>
             <ul className="mt-4 space-y-3 text-sm leading-6 text-muted-foreground">
-              {productProofContent.supportingPoints.map((point) => (
+              {productProof.supportingPoints.map((point) => (
                 <li key={point} className="flex items-start gap-3">
                   <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                   <span>{point}</span>
@@ -34,7 +31,7 @@ const ProductProofSection = () => (
       </div>
 
       <div className="mt-12 grid gap-5 lg:grid-cols-2">
-        {productProofContent.items.map((item, index) => (
+        {productProof.items.map((item, index) => (
           <Reveal key={item.title} delay={index * 90}>
             <ProductPreviewCard
               eyebrow={item.eyebrow}
@@ -42,7 +39,7 @@ const ProductProofSection = () => (
               description={item.description}
               previewType={item.type}
               tags={item.tags}
-              imageSrc={item.imageSrc ? previewImages[item.imageSrc] : undefined}
+              imageSrc={item.imageSrc}
               imageAlt={item.imageAlt}
               isPlaceholder={item.isPlaceholder}
               className="h-full"
@@ -50,8 +47,9 @@ const ProductProofSection = () => (
           </Reveal>
         ))}
       </div>
-    </div>
-  </section>
-);
+      </div>
+    </section>
+  );
+};
 
 export default ProductProofSection;

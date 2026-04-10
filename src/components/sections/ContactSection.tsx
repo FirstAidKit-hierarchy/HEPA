@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { AlertCircle, Send } from "lucide-react";
+import { AlertCircle, Mail, MapPin, Send } from "lucide-react";
 import { Reveal, SectionHeading } from "@/components/common";
-import { contactContent } from "@/content/home";
+import { useSiteContent } from "@/components/providers";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,12 @@ const fieldLabelClassName = "mb-2 block text-sm font-medium text-slate-100";
 
 const ContactSection = () => {
   const { toast } = useToast();
+  const {
+    siteContent: {
+      home: { contact },
+      siteShell: { navigation },
+    },
+  } = useSiteContent();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [selectedService, setSelectedService] = useState("");
@@ -72,12 +78,11 @@ const ContactSection = () => {
     }
 
     setLoading(true);
-    // TODO: connect this form to the approved CRM or inbox endpoint once available.
     window.setTimeout(() => {
       setLoading(false);
       toast({
-        title: contactContent.successMessage.title,
-        description: contactContent.successMessage.description,
+        title: contact.successMessage.title,
+        description: contact.successMessage.description,
       });
       form.reset();
       setSelectedService("");
@@ -102,12 +107,12 @@ const ContactSection = () => {
           <Reveal>
             <SectionHeading
               align="left"
-              eyebrow={contactContent.eyebrow}
-              title={<span className="text-white">{contactContent.title}</span>}
-              description={<span className="text-slate-200/80">{contactContent.description}</span>}
+              eyebrow={contact.eyebrow}
+              title={<span className="text-white">{contact.title}</span>}
+              description={<span className="text-slate-200/80">{contact.description}</span>}
             />
             <div className="mt-6 flex flex-wrap gap-3">
-              {contactContent.engagementPrompts.map((prompt) => (
+              {contact.engagementPrompts.map((prompt) => (
                 <span
                   key={prompt}
                   className="rounded-full border border-white/12 bg-white/[0.08] px-4 py-2 text-sm font-medium text-slate-100"
@@ -117,43 +122,39 @@ const ContactSection = () => {
               ))}
             </div>
             <div className="mt-8 space-y-4">
-              {contactContent.contactItems.map((item) => (
-                <div key={item.label} className="flex items-center gap-3 text-sm text-slate-100/85">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-blue/10">
-                    <item.icon className="text-accent-blue" size={16} />
+              {contact.contactItems.map((item) => {
+                const Icon = item.iconKey === "mapPin" ? MapPin : Mail;
+
+                return (
+                  <div key={item.label} className="flex items-center gap-3 text-sm text-slate-100/85">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-blue/10">
+                      <Icon className="text-accent-blue" size={16} />
+                    </div>
+                    {item.label}
                   </div>
-                  {item.label}
-                </div>
-              ))}
+                );
+              })}
             </div>
             <div className="mt-8 rounded-[1.9rem] border border-white/12 bg-white/[0.06] p-6 shadow-[0_20px_52px_rgba(8,15,28,0.14)] backdrop-blur-xl">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#79D3FF]">What to include in your brief</p>
               <ul className="mt-5 space-y-3 text-sm leading-6 text-slate-200/85">
-                <li className="flex items-start gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>The product, therapy area, or access question you are working on</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>The GCC market or stakeholder audience you need to understand</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>The output you need, such as a report, dashboard, survey workflow, or insight export</span>
-                </li>
+                {contact.briefChecklist.map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
-              <p className="mt-5 text-xs leading-6 text-slate-300/80">{contactContent.supportNote}</p>
+              <p className="mt-5 text-xs leading-6 text-slate-300/80">{contact.supportNote}</p>
             </div>
           </Reveal>
 
           <Reveal delay={150}>
             <div className="rounded-[2rem] border border-[#2B8ABF]/20 bg-[rgba(8,15,28,0.55)] p-6 shadow-xl shadow-black/20 backdrop-blur-xl sm:p-8">
               <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#79D3FF]">Request a conversation</p>
-                <h3 className="mt-3 text-2xl font-semibold text-white">Tell us what your team needs</h3>
-                <p className="mt-3 text-sm leading-6 text-slate-200/80">
-                  Use the form to request a discussion, share a live project question, or outline the output your team needs.
-                </p>
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#79D3FF]">{contact.formIntro.eyebrow}</p>
+                <h3 className="mt-3 text-2xl font-semibold text-white">{contact.formIntro.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-200/80">{contact.formIntro.description}</p>
               </div>
 
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -248,7 +249,7 @@ const ContactSection = () => {
                       <SelectValue placeholder="Select a service or request type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {contactContent.serviceOptions.map((option) => (
+                      {contact.serviceOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
                           {option.label}
                         </SelectItem>
@@ -276,7 +277,7 @@ const ContactSection = () => {
                     "Sending request..."
                   ) : (
                     <>
-                      Talk to an Expert <Send size={16} />
+                      {navigation.primaryCta.label} <Send size={16} />
                     </>
                   )}
                 </Button>

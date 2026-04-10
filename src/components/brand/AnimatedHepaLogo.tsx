@@ -17,6 +17,7 @@ const AnimatedHepaLogo = ({
 }: AnimatedHepaLogoProps) => {
   const [isAnimating, setIsAnimating] = useState(autoPlay);
   const logoSrc = dark ? "/icons/hepa-logo-dark.svg" : "/icons/hepa-logo.svg";
+  const animationModeClass = autoPlay && isAnimating ? "hepa-logo-sweep-autoplay" : "hepa-logo-sweep-interactive";
   const style = {
     "--hepa-logo-accent": "#7ed957",
     "--hepa-logo-sweep-light": "#ffffff",
@@ -36,9 +37,7 @@ const AnimatedHepaLogo = ({
 
   return (
     <span
-      className={`hepa-logo-sweep ${autoPlay ? "hepa-logo-sweep-autoplay" : "hepa-logo-sweep-interactive"} ${
-        isAnimating ? "hepa-logo-sweep-active" : ""
-      } ${className}`.trim()}
+      className={`hepa-logo-sweep ${animationModeClass} ${isAnimating ? "hepa-logo-sweep-active" : ""} ${className}`.trim()}
       style={style}
     >
       <span className="hepa-logo-sweep-stage">

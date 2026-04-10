@@ -12,7 +12,7 @@ type CtaPanel = {
 
 export const sharedCtas = {
   primary: {
-    label: "Talk to an Expert",
+    label: "Talk with us",
     href: "#contact",
   },
 };

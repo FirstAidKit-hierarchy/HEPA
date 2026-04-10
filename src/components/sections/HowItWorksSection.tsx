@@ -1,19 +1,22 @@
 import { Reveal, SectionHeading } from "@/components/common";
-import { workflowContent } from "@/content/home";
+import { useSiteContent } from "@/components/providers";
 
-const HowItWorksSection = () => (
-  <section className="py-16 sm:py-20">
-    <div className="section-container">
-      <Reveal>
-        <SectionHeading
-          eyebrow={workflowContent.eyebrow}
-          title={workflowContent.title}
-          description={workflowContent.description}
-        />
-      </Reveal>
+const HowItWorksSection = () => {
+  const {
+    siteContent: {
+      home: { workflow },
+    },
+  } = useSiteContent();
+
+  return (
+    <section className="py-16 sm:py-20">
+      <div className="section-container">
+        <Reveal>
+          <SectionHeading eyebrow={workflow.eyebrow} title={workflow.title} description={workflow.description} />
+        </Reveal>
 
       <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-        {workflowContent.steps.map((step, index) => (
+        {workflow.steps.map((step, index) => (
           <Reveal key={step.step} delay={index * 90}>
             <article className="relative h-full overflow-hidden rounded-[1.85rem] border border-border/70 bg-card/95 p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)]">
               <div className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,rgba(43,138,191,0.75),rgba(126,217,87,0.6))]" />
@@ -29,8 +32,9 @@ const HowItWorksSection = () => (
           </Reveal>
         ))}
       </div>
-    </div>
-  </section>
-);
+      </div>
+    </section>
+  );
+};
 
 export default HowItWorksSection;

@@ -1,13 +1,20 @@
 import { Reveal, SectionHeading } from "@/components/common";
-import { partners, type Partner } from "@/content/home";
+import { useSiteContent } from "@/components/providers";
 
 interface PartnersSectionProps {
   embedded?: boolean;
 }
 
-const marqueePartners = [...partners, ...partners];
+type PartnerItem = {
+  name: string;
+  lightLogo?: string;
+  logoClassName?: string;
+  logoFitClassName?: string;
+  embeddedFrameClassName?: string;
+  mainFrameClassName?: string;
+};
 
-const renderPartnerLogo = (partner: Partner, frameClassName: string, baseClassName: string) => {
+const renderPartnerLogo = (partner: PartnerItem, frameClassName: string, baseClassName: string) => {
   const logoClassName = `${baseClassName} ${partner.logoFitClassName ?? "object-contain"} ${partner.logoClassName ?? ""}`;
 
   return (
@@ -18,13 +25,20 @@ const renderPartnerLogo = (partner: Partner, frameClassName: string, baseClassNa
 };
 
 const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
+  const {
+    siteContent: {
+      home: { partnersSection },
+    },
+  } = useSiteContent();
+  const marqueePartners = [...partnersSection.items, ...partnersSection.items];
+
   if (embedded) {
     return (
       <Reveal className="w-full">
         <div className="section-container pb-4">
           <div className="text-center">
             <p className="partner-marquee-overline text-[0.68rem] font-semibold uppercase tracking-[0.34em] sm:text-[0.72rem]">
-              Trusted by our partners
+              {partnersSection.embeddedEyebrow}
             </p>
           </div>
         </div>
@@ -72,9 +86,9 @@ const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
       <Reveal className="section-container">
         <SectionHeading
           className="mb-7 sm:mb-8"
-          eyebrow="Trusted By"
-          title="Trusted by our partners"
-          description="A growing network of collaborators across evidence generation, access strategy, and healthcare innovation."
+          eyebrow={partnersSection.eyebrow}
+          title={partnersSection.title}
+          description={partnersSection.description}
         />
       </Reveal>
       <div className="w-full overflow-hidden border-0 bg-transparent shadow-none">

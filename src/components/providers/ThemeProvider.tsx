@@ -1,28 +1,41 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import {
   THEME_STORAGE_KEY,
   getStoredThemePreference,
+  getNextThemePreference,
+  getThemePreference,
   resolveThemePreference,
   setThemePreference,
   syncThemePreference,
+  type ThemePreference,
 } from "@/lib/theme";
 
 type ThemeContextValue = {
   isDark: boolean;
   theme: "light" | "dark";
+  preference: ThemePreference;
   toggleTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [isDark, setIsDark] = useState(resolveThemePreference);
+  const [themeState, setThemeState] = useState(() => ({
+    preference: getThemePreference(),
+    isDark: resolveThemePreference(),
+  }));
 
   useEffect(() => {
-    setIsDark(syncThemePreference());
+    const syncTheme = () => {
+      setThemeState({
+        preference: getThemePreference(),
+        isDark: syncThemePreference(),
+      });
+    };
+
+    syncTheme();
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const syncTheme = () => setIsDark(syncThemePreference());
 
     const handleSystemThemeChange = () => {
       const storedPreference = getStoredThemePreference();
@@ -47,16 +60,21 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const value = useMemo<ThemeContextValue>(
-    () => ({
-      isDark,
-      theme: isDark ? "dark" : "light",
-      toggleTheme: () => {
-        setIsDark(setThemePreference(isDark ? "light" : "dark"));
-      },
-    }),
-    [isDark],
-  );
+  const toggleTheme = () => {
+    const nextPreference = getNextThemePreference(themeState.preference);
+
+    setThemeState({
+      preference: nextPreference,
+      isDark: setThemePreference(nextPreference),
+    });
+  };
+
+  const value: ThemeContextValue = {
+    isDark: themeState.isDark,
+    theme: themeState.isDark ? "dark" : "light",
+    preference: themeState.preference,
+    toggleTheme,
+  };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };

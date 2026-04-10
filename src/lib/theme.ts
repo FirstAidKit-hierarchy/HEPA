@@ -1,5 +1,4 @@
 export const THEME_STORAGE_KEY = "theme";
-export const THEME_CHANGE_EVENT = "hepa:theme-change";
 
 export type ThemePreference = "light" | "dark" | "system";
 
@@ -16,6 +15,10 @@ export function getStoredThemePreference(): ThemePreference | null {
   return value === "light" || value === "dark" || value === "system" ? value : null;
 }
 
+export function getThemePreference(): ThemePreference {
+  return getStoredThemePreference() ?? "system";
+}
+
 export function getSystemPrefersDark() {
   if (!isBrowser()) {
     return false;
@@ -24,16 +27,16 @@ export function getSystemPrefersDark() {
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
-export function resolveThemePreference(preference: ThemePreference | null = getStoredThemePreference()) {
-  if (preference === "dark") {
-    return true;
+export function resolveThemePreference(preference: ThemePreference | null = getThemePreference()) {
+  return preference === "system" || preference === null ? getSystemPrefersDark() : preference === "dark";
+}
+
+export function getNextThemePreference(preference: ThemePreference): ThemePreference {
+  if (preference === "system") {
+    return getSystemPrefersDark() ? "light" : "dark";
   }
 
-  if (preference === "light") {
-    return false;
-  }
-
-  return getSystemPrefersDark();
+  return "system";
 }
 
 export function applyResolvedTheme(isDark: boolean) {
@@ -42,14 +45,6 @@ export function applyResolvedTheme(isDark: boolean) {
   }
 
   document.documentElement.classList.toggle("dark", isDark);
-  window.dispatchEvent(
-    new CustomEvent(THEME_CHANGE_EVENT, {
-      detail: {
-        isDark,
-        preference: getStoredThemePreference(),
-      },
-    }),
-  );
 }
 
 export function syncThemePreference() {
@@ -58,7 +53,7 @@ export function syncThemePreference() {
   return isDark;
 }
 
-export function setThemePreference(preference: Exclude<ThemePreference, "system">) {
+export function setThemePreference(preference: ThemePreference) {
   if (!isBrowser()) {
     return preference === "dark";
   }
@@ -68,4 +63,3 @@ export function setThemePreference(preference: Exclude<ThemePreference, "system"
   applyResolvedTheme(isDark);
   return isDark;
 }
-

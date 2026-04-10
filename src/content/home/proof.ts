@@ -31,7 +31,7 @@ export const productProofContent = {
       title: "Market Access Report Preview",
       description: "A report-ready structure for evidence summaries, local context, and next-step recommendations.",
       type: "report",
-      imageSrc: "hepa-reports",
+      imageSrc: "/og-image.jpg",
       imageAlt: "HEPA report layout preview",
       tags: ["Preview Layout", "Report", "Decision Summary"],
     },

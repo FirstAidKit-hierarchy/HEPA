@@ -1,10 +1,16 @@
 import { CheckCircle2, Download } from "lucide-react";
 import { ActionButtons, Reveal } from "@/components/common";
+import { useSiteContent } from "@/components/providers";
 import { Button } from "@/components/ui/button";
-import { heroContent } from "@/content/home";
 import PartnersSection from "@/components/sections/PartnersSection";
 
 const HeroSection = () => {
+  const {
+    siteContent: {
+      home: { hero },
+    },
+  } = useSiteContent();
+
   return (
     <section id="home" className="relative overflow-hidden pt-16">
       <div
@@ -23,36 +29,30 @@ const HeroSection = () => {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-center lg:gap-12">
           <Reveal className="max-w-3xl">
             <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-sky-50 shadow-[0_10px_30px_rgba(8,15,28,0.18)]">
-              {heroContent.badge}
+              {hero.badge}
             </div>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-6xl">
-              {heroContent.title.lead}
+              {hero.title.lead}
               <span className="mt-3 block bg-gradient-to-r from-[#79D3FF] via-[#2B8ABF] to-[#65D1A7] bg-clip-text text-transparent">
-                {heroContent.title.highlight}
+                {hero.title.highlight}
               </span>
             </h1>
-            <p className="mt-6 max-w-2xl text-base leading-relaxed text-slate-200/90 sm:text-lg">
-              {heroContent.description}
-            </p>
             <div className="mt-8 flex flex-col gap-4 sm:items-start">
-              <ActionButtons
-                primaryCta={heroContent.primaryCta}
-                primaryClassName="w-full sm:w-auto"
-              />
+              <ActionButtons primaryCta={hero.primaryCta} primaryClassName="w-full sm:w-auto" />
               <Button
                 variant="outline"
                 size="lg"
                 asChild
                 className="w-full border-white/35 bg-white/[0.03] text-white hover:border-white hover:bg-white hover:text-slate-950 sm:w-auto"
               >
-                <a href={heroContent.downloadCta.href} download={heroContent.downloadCta.download}>
+                <a href={hero.downloadCta.href} download={hero.downloadCta.download}>
                   <Download size={18} />
-                  {heroContent.downloadCta.label}
+                  {hero.downloadCta.label}
                 </a>
               </Button>
             </div>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {heroContent.quickPoints.map((point, index) => (
+              {hero.quickPoints.map((point, index) => (
                 <Reveal
                   key={point}
                   delay={index * 90}
@@ -74,13 +74,13 @@ const HeroSection = () => {
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(43,138,191,0.28),_transparent_36%),radial-gradient(circle_at_bottom_left,_rgba(126,217,87,0.16),_transparent_30%)]" />
               <div className="relative">
                 <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#79D3FF]">
-                  {heroContent.summaryCard.eyebrow}
+                  {hero.summaryCard.eyebrow}
                 </p>
                 <h2 className="mt-4 text-2xl font-bold leading-tight text-white sm:text-[1.85rem]">
-                  {heroContent.summaryCard.title}
+                  {hero.summaryCard.title}
                 </h2>
                 <div className="mt-6 space-y-4">
-                  {heroContent.summaryCard.items.map((item) => (
+                  {hero.summaryCard.items.map((item) => (
                     <div
                       key={item.label}
                       className="rounded-[1.6rem] border border-white/10 bg-white/[0.05] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"

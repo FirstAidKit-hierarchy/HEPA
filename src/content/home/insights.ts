@@ -8,10 +8,12 @@ type FeaturedInsight = {
 type PublishedReference = {
   title: string;
   href: string;
+  previewImage?: string;
+  previewAlt?: string;
 };
 
 export const insightsContent = {
-  eyebrow: "Insights And Published Work",
+  eyebrow: "Insights and published work",
   title: "Thought leadership, market updates, and reference projects teams can build on",
   description:
     "Use this section for HEPA articles, downloadable reports, and GCC access insights. The featured cards are placeholders until approved editorial content is available.",
@@ -44,6 +46,8 @@ export const insightsContent = {
     {
       title: "The Economic Burden of Thyroid Eye Disease in the Kingdom of Saudi Arabia",
       href: "https://www.ispor.org/heor-resources/presentations-database/presentation/intl2024-3900/137643",
+      previewImage: "/ted-ksa-preview.svg",
+      previewAlt: "Preview slide for thyroid eye disease economic burden in Saudi Arabia",
     },
     {
       title: "Economic Burden Impact of Thyroid Eye Disease in the United Arab Emirates",
@@ -53,14 +57,34 @@ export const insightsContent = {
       title:
         "A Cost-Consequence Analysis of Adopting Chimeric Antigen Receptor T-Cell Therapy for Patients with Relapsed or Refractory Large B-Cell Lymphoma in Saudi Arabia",
       href: "https://www.valueinhealthjournal.com/article/S1098-3015(23)00456-4/fulltext",
+      previewImage: "/cart-saudi-preview.svg",
+      previewAlt: "Preview slide for CAR-T therapy cost-consequence analysis in Saudi Arabia",
     },
     {
       title: "Budget Impact Analysis of Adopting Lanreotide in the Treatment of Acromegaly and GEP-NET in Saudi Arabia",
       href: "https://www.valueinhealthjournal.com/article/S1098-3015(23)00570-3/fulltext",
+      previewImage: "/lanreotide-saudi-preview.svg",
+      previewAlt: "Preview slide for lanreotide budget impact analysis in Saudi Arabia",
     },
     {
-      title: "Economic Impact of Adopting Lanreotide for Patients with Acromegaly and GEP-NET in Qatar",
+      title:
+        "A Cost-Consequence Analysis of Chimeric Antigen Receptor T-Cell Therapy in Patients with Relapsed or Refractory Large B-Cell Lymphoma Across Gulf Cooperation Council Countries",
+      href: "https://www.ispor.org/docs/default-source/euro2024/cart-gcc-poster-for-ispor-2024143901-pdf.pdf?sfvrsn=5c241772_0",
+      previewImage: "/cart-gcc-preview.svg",
+      previewAlt: "Preview slide for CAR-T therapy cost-consequence analysis across GCC countries",
+    },
+    {
+      title: "Economic Impact of Adopting Lanreotide for Patients with Acromegaly and Gep-Net in Qatar",
       href: "https://www.ispor.org/heor-resources/presentations-database/presentation/euro2024-4015/143928",
+      previewImage: "/lanreotide-qatar-preview.svg",
+      previewAlt: "Preview slide for lanreotide economic impact analysis in Qatar",
+    },
+    {
+      title:
+        "The Five-Year Budget Impact of Introducing Semaglutide 2.4 mg for Obesity Management in Saudi Arabia: A Real-World Patient Flow and Complication-Driven Model",
+      href: "https://www.ispor.org/heor-resources/presentations-database/presentation-cti/ispor-europe-2025/poster-session-5-2/the-five-year-budget-impact-of-introducing-semaglutide-2-4-mg-for-obesity-management-in-saudi-arabia-a-real-world-patient-flow-and-complication-driven-model",
+      previewImage: "/semaglutide-saudi-preview.svg",
+      previewAlt: "Preview slide for semaglutide budget impact analysis in Saudi Arabia",
     },
   ] satisfies PublishedReference[],
 };

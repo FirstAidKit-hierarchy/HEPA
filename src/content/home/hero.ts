@@ -1,17 +1,14 @@
+import { sharedCtas } from "./cta";
+
 export const heroContent = {
-  badge: "GCC market access and evidence support",
+  badge: "Saudi Arabia and GCC market access and evidence support",
   title: {
-    lead: "Decision-ready evidence, pricing research, and stakeholder insight",
-    highlight: "for pharma and medtech teams working across the GCC",
+    lead: "Smarter evidence, pricing, and insight",
+    highlight: "for Saudi Arabia and GCC pharma and medtech teams",
   },
-  description:
-    "HEPA helps pharma, medtech, medical affairs, market access, and regulatory teams collect local input, structure evidence, and deliver reports, dashboards, and survey outputs that support launch, pricing, and access decisions.",
-  primaryCta: {
-    label: "Talk to an Expert",
-    href: "#contact",
-  },
+  primaryCta: sharedCtas.primary,
   downloadCta: {
-    label: "Download Business Profile",
+    label: "Download HEPA Profile",
     href: "/documents/HEPA%20Company%20Profile%202026%20for%20Extrnal%20Use.pdf",
     download: "HEPA-Business-Profile-2026.pdf",
   },
@@ -22,7 +19,7 @@ export const heroContent = {
     "Decision-ready reports and dashboards",
   ],
   summaryCard: {
-    eyebrow: "What teams can use HEPA for",
+    eyebrow: "Who can use HEPA",
     title: "From local data collection to decision-ready output",
     items: [
       {
