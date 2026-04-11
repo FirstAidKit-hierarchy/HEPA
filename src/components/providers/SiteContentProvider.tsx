@@ -4,6 +4,7 @@ import { subscribeToSiteContent } from "@/lib/firebase/siteContent";
 import { createSiteContentDraft, defaultSiteContent, type SiteContent } from "@/content/site/defaults";
 
 type SiteContentContextValue = {
+  isSiteContentReady: boolean;
   siteContent: SiteContent;
 };
 
@@ -11,6 +12,7 @@ const SiteContentContext = createContext<SiteContentContextValue | undefined>(un
 
 export const SiteContentProvider = ({ children }: { children: ReactNode }) => {
   const [siteContent, setSiteContent] = useState<SiteContent>(() => createSiteContentDraft(defaultSiteContent));
+  const [isSiteContentReady, setIsSiteContentReady] = useState(!isFirebaseConfigured);
 
   useEffect(() => {
     if (!isFirebaseConfigured) {
@@ -21,10 +23,14 @@ export const SiteContentProvider = ({ children }: { children: ReactNode }) => {
       if (remoteContent) {
         setSiteContent(remoteContent);
       }
+
+      setIsSiteContentReady(true);
+    }, () => {
+      setIsSiteContentReady(true);
     });
   }, []);
 
-  return <SiteContentContext.Provider value={{ siteContent }}>{children}</SiteContentContext.Provider>;
+  return <SiteContentContext.Provider value={{ siteContent, isSiteContentReady }}>{children}</SiteContentContext.Provider>;
 };
 
 export const useSiteContent = () => {

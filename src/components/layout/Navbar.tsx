@@ -4,7 +4,9 @@ import { AnimatedHepaLogo } from "@/components/brand";
 import { useAppTheme, useSiteContent } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import { scrollToSection } from "@/lib/scroll";
+import { isExternalHref, isHashHref, isInternalPathHref, normalizeAppHref } from "@/lib/site-pages";
 import { cn } from "@/lib/utils";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const MOBILE_NAV_PANEL_ID = "mobile-site-navigation";
 const HERO_SURFACE_STYLES = {
@@ -37,6 +39,8 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { isDark, preference, toggleTheme } = useAppTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     siteContent: {
       siteShell: { navigation },
@@ -82,13 +86,56 @@ const Navbar = () => {
   }, []);
 
   const handleNavigation = (href: string, closeMobileMenu = false) => {
+    const trimmedHref = href.trim();
+
+    const navigateToHref = () => {
+      if (isHashHref(trimmedHref)) {
+        if (location.pathname === "/") {
+          scrollToSection(trimmedHref);
+          return;
+        }
+
+        navigate(`/${trimmedHref}`);
+        return;
+      }
+
+      if (isInternalPathHref(trimmedHref)) {
+        navigate(normalizeAppHref(trimmedHref));
+      }
+    };
+
     if (closeMobileMenu) {
       setOpen(false);
-      window.setTimeout(() => scrollToSection(href), 250);
+      window.setTimeout(navigateToHref, 250);
       return;
     }
 
-    scrollToSection(href);
+    navigateToHref();
+  };
+
+  const isLinkHandledInApp = (href: string) => isHashHref(href) || isInternalPathHref(href);
+
+  const renderNavigationLink = (href: string, label: string, className: string, closeMobileMenu = false) => {
+    if (!isLinkHandledInApp(href) || isExternalHref(href)) {
+      return (
+        <a href={href} className={className}>
+          {label}
+        </a>
+      );
+    }
+
+    return (
+      <a
+        href={isHashHref(href) && location.pathname !== "/" ? `/${href}` : normalizeAppHref(href) || href}
+        onClick={(event) => {
+          event.preventDefault();
+          handleNavigation(href, closeMobileMenu);
+        }}
+        className={className}
+      >
+        {label}
+      </a>
+    );
   };
 
   const renderThemeButton = () => (
@@ -103,40 +150,34 @@ const Navbar = () => {
         <div className={cn("relative overflow-hidden rounded-[1.75rem] backdrop-blur-3xl", surfaceTone.navShell)}>
           <div className={cn("pointer-events-none absolute inset-0", surfaceTone.navGlow)} />
           <div className="relative flex h-16 items-center justify-between px-4 sm:px-5">
-            <a href="#home" className="group flex items-center">
+            <Link to="/" className="group flex items-center">
               <AnimatedHepaLogo
                 dark={!scrolled || isDark}
                 className="h-8"
                 imageClassName="h-8 w-auto transition-transform duration-400 group-hover:scale-105"
               />
-            </a>
+            </Link>
 
             <div className="hidden md:flex items-center gap-4">
               <div className="flex items-center gap-8">
                 {navigation.links.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      handleNavigation(link.href);
-                    }}
-                    className={textTone.desktopLink}
-                  >
-                    {link.label}
-                  </a>
+                  <div key={link.href}>{renderNavigationLink(link.href, link.label, textTone.desktopLink)}</div>
                 ))}
               </div>
               <Button variant="hero" size="sm" asChild className={navCtaClassName}>
-                <a
-                  href={navigation.primaryCta.href}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    handleNavigation(navigation.primaryCta.href);
-                  }}
-                >
-                  {navigation.primaryCta.label}
-                </a>
+                {isLinkHandledInApp(navigation.primaryCta.href) ? (
+                  <a
+                    href={isHashHref(navigation.primaryCta.href) && location.pathname !== "/" ? `/${navigation.primaryCta.href}` : normalizeAppHref(navigation.primaryCta.href) || navigation.primaryCta.href}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      handleNavigation(navigation.primaryCta.href);
+                    }}
+                  >
+                    {navigation.primaryCta.label}
+                  </a>
+                ) : (
+                  <a href={navigation.primaryCta.href}>{navigation.primaryCta.label}</a>
+                )}
               </Button>
               {renderThemeButton()}
             </div>
@@ -163,29 +204,23 @@ const Navbar = () => {
           <div className={surfaceTone.mobilePanel}>
             <div className="space-y-3 px-4 pb-4 pt-3">
               {navigation.links.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    handleNavigation(link.href, true);
-                  }}
-                  className={textTone.mobileLink}
-                >
-                  {link.label}
-                </a>
+                <div key={link.href}>{renderNavigationLink(link.href, link.label, textTone.mobileLink, true)}</div>
               ))}
               <div className="grid gap-3 border-t border-white/10 pt-4">
                 <Button variant="hero" asChild className="w-full">
-                  <a
-                    href={navigation.primaryCta.href}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      handleNavigation(navigation.primaryCta.href, true);
-                    }}
-                  >
-                    {navigation.primaryCta.label}
-                  </a>
+                  {isLinkHandledInApp(navigation.primaryCta.href) ? (
+                    <a
+                      href={isHashHref(navigation.primaryCta.href) && location.pathname !== "/" ? `/${navigation.primaryCta.href}` : normalizeAppHref(navigation.primaryCta.href) || navigation.primaryCta.href}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        handleNavigation(navigation.primaryCta.href, true);
+                      }}
+                    >
+                      {navigation.primaryCta.label}
+                    </a>
+                  ) : (
+                    <a href={navigation.primaryCta.href}>{navigation.primaryCta.label}</a>
+                  )}
                 </Button>
               </div>
             </div>

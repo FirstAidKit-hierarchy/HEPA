@@ -1,5 +1,5 @@
 import { Reveal, SectionHeading } from "@/components/common";
-import { useSiteContent } from "@/components/providers";
+import { useAppTheme, useSiteContent } from "@/components/providers";
 
 interface PartnersSectionProps {
   embedded?: boolean;
@@ -8,23 +8,45 @@ interface PartnersSectionProps {
 type PartnerItem = {
   name: string;
   lightLogo?: string;
+  darkLogo?: string;
   logoClassName?: string;
   logoFitClassName?: string;
   embeddedFrameClassName?: string;
   mainFrameClassName?: string;
 };
 
-const renderPartnerLogo = (partner: PartnerItem, frameClassName: string, baseClassName: string) => {
-  const logoClassName = `${baseClassName} ${partner.logoFitClassName ?? "object-contain"} ${partner.logoClassName ?? ""}`;
+const getPartnerLogoSource = (partner: PartnerItem, isDark: boolean) => {
+  const lightLogo = partner.lightLogo?.trim() ?? "";
+  const darkLogo = partner.darkLogo?.trim() ?? "";
+
+  if (isDark) {
+    return {
+      src: darkLogo || lightLogo,
+      usesFallbackFilter: !darkLogo && Boolean(lightLogo),
+    };
+  }
+
+  return {
+    src: lightLogo || darkLogo,
+    usesFallbackFilter: false,
+  };
+};
+
+const renderPartnerLogo = (partner: PartnerItem, frameClassName: string, baseClassName: string, isDark: boolean) => {
+  const { src, usesFallbackFilter } = getPartnerLogoSource(partner, isDark);
+  const logoClassName = `${baseClassName} ${partner.logoFitClassName ?? "object-contain"} ${partner.logoClassName ?? ""} ${
+    usesFallbackFilter ? "partner-marquee-logo-filtered" : ""
+  }`;
 
   return (
     <div className={frameClassName}>
-      {partner.lightLogo ? <img src={partner.lightLogo} alt={partner.name} className={logoClassName} /> : null}
+      {src ? <img src={src} alt={partner.name} className={logoClassName} /> : null}
     </div>
   );
 };
 
 const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
+  const { isDark } = useAppTheme();
   const {
     siteContent: {
       home: { partnersSection },
@@ -47,7 +69,8 @@ const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
             <div className="partner-marquee">
               <div className="partner-marquee-track">
                 {marqueePartners.map((partner, index) => {
-                  const hasLogo = Boolean(partner.lightLogo);
+                  const { src } = getPartnerLogoSource(partner, isDark);
+                  const hasLogo = Boolean(src);
 
                   return (
                     <div
@@ -64,6 +87,7 @@ const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
                           partner.embeddedFrameClassName ??
                             "flex h-10 w-[9.5rem] items-center justify-center sm:h-12 sm:w-[10.5rem]",
                           "partner-marquee-logo h-full w-full origin-center object-center transition-transform duration-500",
+                          isDark,
                         )
                       ) : (
                         <span className="partner-marquee-label text-[0.7rem] font-semibold uppercase tracking-[0.3em] transition-colors duration-500 sm:text-[0.72rem]">
@@ -96,7 +120,8 @@ const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
           <div className="partner-marquee">
             <div className="partner-marquee-track">
               {marqueePartners.map((partner, index) => {
-                const hasLogo = Boolean(partner.lightLogo);
+                const { src } = getPartnerLogoSource(partner, isDark);
+                const hasLogo = Boolean(src);
 
                 return (
                   <div
@@ -113,6 +138,7 @@ const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
                         partner.mainFrameClassName ??
                           "flex h-14 w-[10.5rem] items-center justify-center sm:h-16 sm:w-[11.5rem]",
                         "partner-marquee-logo h-full w-full origin-center object-center transition-transform duration-500",
+                        isDark,
                       )
                     ) : (
                       <span className="partner-marquee-label text-[0.72rem] font-semibold uppercase tracking-[0.32em] transition-colors duration-500 sm:text-xs">

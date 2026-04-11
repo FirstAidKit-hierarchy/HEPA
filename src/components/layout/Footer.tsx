@@ -1,4 +1,5 @@
 import { Linkedin, Mail, MapPin } from "lucide-react";
+import { SiteLink } from "@/components/common";
 import { useSiteContent } from "@/components/providers";
 
 const Footer = () => {
@@ -20,10 +21,10 @@ const Footer = () => {
             />
             <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">{footer.description}</p>
             <div className="mt-5 space-y-3 text-sm text-muted-foreground">
-              <a href={`mailto:${footer.email}`} className="flex items-center gap-3 transition-colors hover:text-foreground">
+              <SiteLink href={`mailto:${footer.email}`} className="flex items-center gap-3 transition-colors hover:text-foreground">
                 <Mail size={16} className="text-accent-blue" />
                 <span>{footer.email}</span>
-              </a>
+              </SiteLink>
               <div className="flex items-start gap-3">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-accent-blue" />
                 <span>{footer.location}</span>
@@ -35,13 +36,13 @@ const Footer = () => {
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/75">Quick links</p>
             <div className="mt-5 space-y-3">
               {navigation.links.map((link) => (
-                <a
+                <SiteLink
                   key={link.href}
                   href={link.href}
                   className="block text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground"
                 >
                   {link.label}
-                </a>
+                </SiteLink>
               ))}
             </div>
           </div>
@@ -50,12 +51,12 @@ const Footer = () => {
             <p className="text-sm font-semibold uppercase tracking-[0.24em] text-foreground/75">Connect</p>
             <div className="mt-5 space-y-3">
               {footer.legalLinks.map((link) => (
-                <a key={link.label} href={link.href} className="block text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground">
+                <SiteLink key={link.label} href={link.href} className="block text-sm text-muted-foreground transition-colors duration-300 hover:text-foreground">
                   {link.label}
-                </a>
+                </SiteLink>
               ))}
               {footer.socialLinks.map((link) => (
-                <a
+                <SiteLink
                   key={link.label}
                   href={link.href}
                   target="_blank"
@@ -64,7 +65,7 @@ const Footer = () => {
                 >
                   <Linkedin size={18} />
                   <span>{link.label}</span>
-                </a>
+                </SiteLink>
               ))}
             </div>
           </div>

@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { AnimatedHepaLogo } from "@/components/brand";
+import { SiteLink } from "@/components/common";
 import { useAppTheme, useSiteContent } from "@/components/providers";
+import { PageLoader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +24,7 @@ function upsertMeta(name: string) {
 const NotFoundPage = () => {
   const { isDark } = useAppTheme();
   const {
+    isSiteContentReady,
     siteContent: { notFoundPage },
   } = useSiteContent();
 
@@ -44,6 +47,10 @@ const NotFoundPage = () => {
       robotsMeta.remove();
     };
   }, []);
+
+  if (!isSiteContentReady) {
+    return <PageLoader visible fading={false} />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,7 +77,7 @@ const NotFoundPage = () => {
             asChild
             className="mt-6 rounded-full border-white/15 bg-white/[0.08] px-6 text-white hover:bg-white/[0.14] hover:text-white"
           >
-            <a href={notFoundPage.buttonHref}>{notFoundPage.buttonLabel}</a>
+            <SiteLink href={notFoundPage.buttonHref}>{notFoundPage.buttonLabel}</SiteLink>
           </Button>
         </div>
       </main>

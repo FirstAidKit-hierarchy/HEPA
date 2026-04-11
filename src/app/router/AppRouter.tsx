@@ -1,8 +1,10 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import RouteScrollManager from "./RouteScrollManager";
 import { appRoutes } from "./routes";
 
 const AppRouter = () => (
   <BrowserRouter>
+    <RouteScrollManager />
     <Routes>
       {appRoutes.map((route) => (
         <Route key={route.path} path={route.path} element={route.element} />

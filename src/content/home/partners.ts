@@ -1,6 +1,7 @@
 export type Partner = {
   name: string;
   lightLogo?: string;
+  darkLogo?: string;
   logoClassName?: string;
   logoFitClassName?: string;
   embeddedFrameClassName?: string;

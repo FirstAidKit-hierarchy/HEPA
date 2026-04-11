@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import { CalendarDays, CreditCard, FileText, Moon, PencilLine, Sun } from "lucide-react";
+import { CalendarDays, CreditCard, FileText, Moon, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AnimatedHepaLogo } from "@/components/brand";
 import { useAppTheme, useSiteContent } from "@/components/providers";
+import { PageLoader } from "@/components/layout";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ADMIN_PAGE_PATH } from "@/pages/admin/config";
 import { PRIVATE_PAGE_ROBOTS, PRIVATE_PAGE_TITLE } from "./config";
 
 function upsertMeta(name: string) {
@@ -23,6 +23,7 @@ function upsertMeta(name: string) {
 const PrivatePage = () => {
   const { isDark, preference, toggleTheme } = useAppTheme();
   const {
+    isSiteContentReady,
     siteContent: { privatePage: content },
   } = useSiteContent();
   const ThemeIcon = isDark ? Sun : Moon;
@@ -51,6 +52,10 @@ const PrivatePage = () => {
     };
   }, []);
 
+  if (!isSiteContentReady) {
+    return <PageLoader visible fading={false} />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <main className="relative overflow-hidden">
@@ -68,36 +73,23 @@ const PrivatePage = () => {
         <div className="section-container relative z-10 py-5 sm:py-6">
           <header className="rounded-[1.75rem] border border-white/12 bg-white/[0.08] shadow-[0_20px_60px_rgba(8,15,28,0.18),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-3xl">
             <div className="flex items-center justify-between gap-3 px-4 py-3 sm:h-16 sm:px-5 sm:py-0">
-              <a href="/" className="group inline-flex items-center">
+              <Link to="/" className="group inline-flex items-center">
                 <AnimatedHepaLogo
                   dark={isDark}
                   className="h-7 sm:h-8"
                   imageClassName="h-7 w-auto transition-transform duration-400 group-hover:scale-105 sm:h-8"
                   autoPlay
                 />
-              </a>
+              </Link>
 
-              <div className="flex items-center gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="rounded-full border-white/12 bg-white/10 px-3 text-white hover:bg-white/14 hover:text-white"
-                >
-                  <Link to={ADMIN_PAGE_PATH}>
-                    <PencilLine size={15} />
-                    Manual edit
-                  </Link>
-                </Button>
-                <button
-                  onClick={toggleTheme}
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 transition-all duration-300 hover:scale-110 hover:bg-white/15"
-                  aria-label={themeButtonLabel}
-                  title={themeButtonLabel}
-                >
-                  <ThemeIcon size={16} className="text-[#79D3FF]" />
-                </button>
-              </div>
+              <button
+                onClick={toggleTheme}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 transition-all duration-300 hover:scale-110 hover:bg-white/15"
+                aria-label={themeButtonLabel}
+                title={themeButtonLabel}
+              >
+                <ThemeIcon size={16} className="text-[#79D3FF]" />
+              </button>
             </div>
           </header>
 

@@ -253,9 +253,7 @@
         var(--hepa-logo-accent) 54%,
         var(--hepa-logo-accent) 100%
       );
-    box-shadow:
-      0 0 28px color-mix(in srgb, var(--hepa-logo-accent) 40%, transparent),
-      -10px 0 24px color-mix(in srgb, var(--hepa-logo-sweep-dark) 16%, transparent);
+    box-shadow: none;
   }
   .hepa-logo-sweep-active .hepa-logo-sweep-reveal {
     animation: hepa-logo-sweep-reveal 1350ms cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
@@ -340,10 +338,12 @@
     color: var(--partner-card-text-hover);
   }
   .partner-marquee-logo {
-    filter: var(--partner-card-logo-filter);
     transition: filter 500ms ease;
   }
-  .partner-marquee-item:hover .partner-marquee-logo {
+  .partner-marquee-logo-filtered {
+    filter: var(--partner-card-logo-filter);
+  }
+  .partner-marquee-item:hover .partner-marquee-logo-filtered {
     filter: var(--partner-card-logo-hover-filter);
   }
   .partner-marquee-overline {

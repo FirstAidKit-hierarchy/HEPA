@@ -15,12 +15,13 @@ import { useSiteContent } from "@/components/providers";
 import { useHomePageLoader } from "./useHomePageLoader";
 
 const HomePage = () => {
-  const { showLoader, hideLoader } = useHomePageLoader();
   const {
+    isSiteContentReady,
     siteContent: {
       home: { ctaPanels },
     },
   } = useSiteContent();
+  const { showLoader, hideLoader } = useHomePageLoader(isSiteContentReady);
 
   return (
     <div className="min-h-screen bg-background">

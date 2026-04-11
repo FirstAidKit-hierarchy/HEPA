@@ -31,6 +31,7 @@ import {
   workflowContent,
 } from "@/content/home";
 import { navigationLinks } from "@/content/navigation";
+import { normalizeOptionalPagePath, normalizePagePath } from "@/lib/site-pages";
 import { createWorkshopContentDraft, workshopContent } from "@/pages/private/content";
 
 const audienceIconKeyMap = new Map<LucideIcon, string>([
@@ -64,6 +65,14 @@ const contactIconKeyMap = new Map<LucideIcon, string>([
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+const createDraftId = (prefix: string) => {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `${prefix}-${crypto.randomUUID().slice(0, 8)}`;
+  }
+
+  return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
 export const cloneValue = <T,>(value: T): T => {
   if (Array.isArray(value)) {
     return value.map((item) => cloneValue(item)) as T;
@@ -74,6 +83,34 @@ export const cloneValue = <T,>(value: T): T => {
   }
 
   return value;
+};
+
+export type CustomPageBlockType = "hero" | "content" | "checklist" | "cta";
+
+export type CustomPageAction = {
+  label: string;
+  href: string;
+};
+
+export type CustomPageBlock = {
+  id: string;
+  type: CustomPageBlockType;
+  eyebrow: string;
+  title: string;
+  description: string;
+  body: string;
+  items: string[];
+  primaryAction: CustomPageAction;
+  secondaryAction: CustomPageAction;
+};
+
+export type CustomPage = {
+  id: string;
+  title: string;
+  navigationLabel: string;
+  path: string;
+  description: string;
+  blocks: CustomPageBlock[];
 };
 
 const mergeWithTemplate = <T,>(template: T, value: unknown): T => {
@@ -99,6 +136,116 @@ const mergeWithTemplate = <T,>(template: T, value: unknown): T => {
   return typeof value === typeof template ? (value as T) : cloneValue(template);
 };
 
+const isCustomPageBlockType = (value: unknown): value is CustomPageBlockType =>
+  value === "hero" || value === "content" || value === "checklist" || value === "cta";
+
+const createCustomPageActionDraft = (label: string, href: string): CustomPageAction => ({
+  label,
+  href,
+});
+
+export const createCustomPageBlockDraft = (type: CustomPageBlockType = "content"): CustomPageBlock => {
+  const blockId = createDraftId("block");
+
+  switch (type) {
+    case "hero":
+      return {
+        id: blockId,
+        type,
+        eyebrow: "Page intro",
+        title: "Explain what this page is about",
+        description: "Use this first block to frame the offer, audience, or event before the detail sections begin.",
+        body: "",
+        items: ["Trusted delivery", "Clear next step", "Ready for launch"],
+        primaryAction: createCustomPageActionDraft("Contact HEPA", "#contact"),
+        secondaryAction: createCustomPageActionDraft("Back to home", "/"),
+      };
+    case "checklist":
+      return {
+        id: blockId,
+        type,
+        eyebrow: "Checklist",
+        title: "Show the key actions or deliverables",
+        description: "Drag this block where you want visitors to scan the main takeaways.",
+        body: "",
+        items: ["Add your first point", "Add your second point", "Add your third point"],
+        primaryAction: createCustomPageActionDraft("Start a conversation", "#contact"),
+        secondaryAction: createCustomPageActionDraft("Learn more", "/"),
+      };
+    case "cta":
+      return {
+        id: blockId,
+        type,
+        eyebrow: "Call to action",
+        title: "Invite the visitor to take the next step",
+        description: "Use this block near the end of the page to direct users to a form, another page, or an external resource.",
+        body: "",
+        items: [],
+        primaryAction: createCustomPageActionDraft("Get in touch", "#contact"),
+        secondaryAction: createCustomPageActionDraft("Browse services", "/"),
+      };
+    case "content":
+    default:
+      return {
+        id: blockId,
+        type: "content",
+        eyebrow: "Content section",
+        title: "Add a supporting section",
+        description: "Use this space for proof points, service details, or a short explanation.",
+        body: "Write a short paragraph that expands on the section title and gives the visitor useful context.",
+        items: [],
+        primaryAction: createCustomPageActionDraft("", ""),
+        secondaryAction: createCustomPageActionDraft("", ""),
+      };
+  }
+};
+
+export const createCustomPageDraft = (): CustomPage => {
+  const pageId = createDraftId("page");
+  const pathSuffix = pageId.slice(-4);
+
+  return {
+    id: pageId,
+    title: "New page",
+    navigationLabel: "New page",
+    path: normalizePagePath(`/new-page-${pathSuffix}`),
+    description: "Create a new landing page, workshop page, or service page with drag-and-drop content blocks.",
+    blocks: [createCustomPageBlockDraft("hero"), createCustomPageBlockDraft("content")],
+  };
+};
+
+const normalizeCustomPageBlock = (value: unknown, fallbackType: CustomPageBlockType = "content"): CustomPageBlock => {
+  const source = isPlainObject(value) ? value : {};
+  const blockType = isCustomPageBlockType(source.type) ? source.type : fallbackType;
+
+  return mergeWithTemplate(createCustomPageBlockDraft(blockType), {
+    ...source,
+    id: typeof source.id === "string" && source.id.trim().length > 0 ? source.id : createDraftId("block"),
+  });
+};
+
+const normalizeCustomPage = (value: unknown): CustomPage => {
+  const template = createCustomPageDraft();
+  const source = isPlainObject(value) ? value : {};
+  const blocksSource = Array.isArray(source.blocks) ? source.blocks : template.blocks;
+  const merged = mergeWithTemplate(
+    {
+      ...template,
+      blocks: [] as CustomPageBlock[],
+    },
+    {
+      ...source,
+      blocks: [],
+    },
+  );
+
+  return {
+    ...merged,
+    path: normalizePagePath(typeof source.path === "string" ? source.path : template.path),
+    blocks: blocksSource.map((block, index) => normalizeCustomPageBlock(block, index === 0 ? "hero" : "content")),
+  };
+};
+
 const footerDescription =
   "Decision-ready evidence, pricing research, and market access support for healthcare teams across Saudi Arabia and the GCC.";
 
@@ -108,7 +255,7 @@ const contactBriefChecklist = [
   "The output you need, such as a report, dashboard, survey workflow, or insight export",
 ];
 
-export const defaultSiteContent = {
+const baseSiteContent = {
   siteShell: {
     navigation: {
       links: navigationLinks.map((link) => ({ ...link })),
@@ -215,10 +362,23 @@ export const defaultSiteContent = {
       description:
         "A growing network of collaborators across evidence generation, access strategy, and healthcare innovation.",
       embeddedEyebrow: "Trusted by our partners",
-      items: partners.map((partner) => ({ ...partner })),
+      items: partners.map((partner) => ({
+        name: partner.name,
+        lightLogo: partner.lightLogo ?? "",
+        darkLogo: partner.darkLogo ?? "",
+      })),
     },
   },
+  adminPage: {
+    aliasPath: "",
+  },
+  privatePageRoute: {
+    aliasPath: "",
+  },
   privatePage: createWorkshopContentDraft(workshopContent),
+  notFoundPageRoute: {
+    aliasPath: "",
+  },
   notFoundPage: {
     title: "Page not found",
     buttonLabel: "Return to the page",
@@ -226,9 +386,51 @@ export const defaultSiteContent = {
   },
 };
 
-export type SiteContent = typeof defaultSiteContent;
+type BaseSiteContent = typeof baseSiteContent;
 
-export const normalizeSiteContent = (value: unknown) => mergeWithTemplate(defaultSiteContent, value);
+export type SiteContent = BaseSiteContent & {
+  customPages: CustomPage[];
+};
+
+export const defaultSiteContent: SiteContent = {
+  ...baseSiteContent,
+  customPages: [],
+};
+
+export const normalizeSiteContent = (value: unknown): SiteContent => {
+  const source = isPlainObject(value) ? value : {};
+  const merged = mergeWithTemplate(defaultSiteContent, {
+    ...source,
+    customPages: [],
+  });
+  const customPagesSource = Array.isArray(source.customPages) ? source.customPages : defaultSiteContent.customPages;
+
+  return {
+    ...merged,
+    adminPage: {
+      aliasPath: normalizeOptionalPagePath(
+        isPlainObject(source.adminPage) && typeof source.adminPage.aliasPath === "string"
+          ? source.adminPage.aliasPath
+          : defaultSiteContent.adminPage.aliasPath,
+      ),
+    },
+    privatePageRoute: {
+      aliasPath: normalizeOptionalPagePath(
+        isPlainObject(source.privatePageRoute) && typeof source.privatePageRoute.aliasPath === "string"
+          ? source.privatePageRoute.aliasPath
+          : defaultSiteContent.privatePageRoute.aliasPath,
+      ),
+    },
+    notFoundPageRoute: {
+      aliasPath: normalizeOptionalPagePath(
+        isPlainObject(source.notFoundPageRoute) && typeof source.notFoundPageRoute.aliasPath === "string"
+          ? source.notFoundPageRoute.aliasPath
+          : defaultSiteContent.notFoundPageRoute.aliasPath,
+      ),
+    },
+    customPages: customPagesSource.map((page) => normalizeCustomPage(page)),
+  };
+};
 
 export const createSiteContentDraft = (value: unknown = defaultSiteContent) => normalizeSiteContent(value);
 

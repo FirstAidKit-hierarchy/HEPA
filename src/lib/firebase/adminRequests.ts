@@ -151,10 +151,27 @@ export const isOwnerEmail = (email: string | null | undefined) =>
   Boolean(ownerEmail) && typeof email === "string" && email.trim().toLowerCase() === ownerEmail.toLowerCase();
 export const isOwnerUser = (user: Pick<User, "email"> | null | undefined) => isOwnerEmail(user?.email);
 
-const assertOwnerReviewer = (reviewer: User) => {
-  if (!isOwnerUser(reviewer)) {
-    throw new Error("Only the owner can manage admin access.");
+const loadAdminUserRecordByUid = async (uid: string) => {
+  if (!firestore) {
+    return null;
   }
+
+  const snapshot = await getDoc(doc(firestore, ADMIN_USERS_COLLECTION, uid));
+  return snapshot.exists() ? normalizeAdminUserRecord(snapshot.id, snapshot.data()) : null;
+};
+
+const assertOwnerReviewer = async (reviewer: User) => {
+  if (isOwnerUser(reviewer)) {
+    return;
+  }
+
+  const adminRecord = await loadAdminUserRecordByUid(reviewer.uid);
+
+  if (adminRecord?.role === "owner") {
+    return;
+  }
+
+  throw new Error("Only the owner can manage admin access.");
 };
 
 export const loadAdminAccessRequest = async (uid: string) => {
@@ -251,7 +268,7 @@ export const approveAdminAccessRequest = async (request: AdminAccessRequest, rev
     throw new Error("Firebase is not configured.");
   }
 
-  assertOwnerReviewer(reviewer);
+  await assertOwnerReviewer(reviewer);
 
   const reviewedAt = new Date().toISOString();
 
@@ -284,7 +301,7 @@ export const declineAdminAccessRequest = async (request: AdminAccessRequest, rev
     throw new Error("Firebase is not configured.");
   }
 
-  assertOwnerReviewer(reviewer);
+  await assertOwnerReviewer(reviewer);
 
   await setDoc(
     doc(firestore, ADMIN_REQUESTS_COLLECTION, request.uid),
@@ -303,9 +320,9 @@ export const revokeAdminAccess = async (admin: AdminUserRecord, reviewer: User) 
     throw new Error("Firebase is not configured.");
   }
 
-  assertOwnerReviewer(reviewer);
+  await assertOwnerReviewer(reviewer);
 
-  if (isOwnerEmail(admin.email)) {
+  if (isOwnerEmail(admin.email) || admin.role === "owner") {
     throw new Error("Owner access cannot be removed.");
   }
 
@@ -321,6 +338,28 @@ export const revokeAdminAccess = async (admin: AdminUserRecord, reviewer: User) 
       reviewedByUid: reviewer.uid,
       reviewedByEmail: reviewer.email?.trim() ?? "",
       ownerEmail,
+    },
+    { merge: true },
+  );
+};
+
+export const updateAdminRole = async (admin: AdminUserRecord, nextRole: "owner" | "admin", reviewer: User) => {
+  if (!firestore) {
+    throw new Error("Firebase is not configured.");
+  }
+
+  await assertOwnerReviewer(reviewer);
+
+  if (isOwnerEmail(admin.email) && nextRole !== "owner") {
+    throw new Error("The configured owner account cannot be demoted.");
+  }
+
+  await setDoc(
+    doc(firestore, ADMIN_USERS_COLLECTION, admin.uid),
+    {
+      role: nextRole,
+      grantedByUid: reviewer.uid,
+      grantedByEmail: reviewer.email?.trim() ?? "",
     },
     { merge: true },
   );

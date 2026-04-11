@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import SiteLink from "./SiteLink";
 
 type CtaLink = {
   label: string;
@@ -33,7 +34,7 @@ const ActionButtons = ({
         primaryClassName,
       )}
     >
-      <a href={primaryCta.href}>{primaryCta.label}</a>
+      <SiteLink href={primaryCta.href}>{primaryCta.label}</SiteLink>
     </Button>
     {secondaryCta ? (
       <Button
@@ -42,7 +43,7 @@ const ActionButtons = ({
         asChild
         className={cn("w-full min-w-0 sm:w-auto", secondaryClassName)}
       >
-        <a href={secondaryCta.href}>{secondaryCta.label}</a>
+        <SiteLink href={secondaryCta.href}>{secondaryCta.label}</SiteLink>
       </Button>
     ) : null}
   </div>

@@ -6,9 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import AssetUploadButton from "./AssetUploadButton";
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isRoutePathField = (fieldPath: string) => /(?:^|\.)(path|aliasPath)$/i.test(fieldPath);
+
+const isImageAssetField = (fieldPath: string) => /(previewImage|imageSrc|lightLogo|logo|src)$/i.test(fieldPath);
+
+const supportsAssetUpload = (fieldPath: string) =>
+  !isRoutePathField(fieldPath) && (isImageAssetField(fieldPath) || /(href|url|file)/i.test(fieldPath));
 
 const formatLabel = (value: string) =>
   value
@@ -21,10 +29,25 @@ const formatLabel = (value: string) =>
     .replace(/^./, (character) => character.toUpperCase());
 
 const isMultilineField = (fieldPath: string, value: string) =>
-  value.length > 80 ||
-  /(description|note|quote|message|help|who|outcome|challenge|solution|result|title|location|copyrightLabel)/i.test(
-    fieldPath,
-  );
+  !supportsAssetUpload(fieldPath) &&
+  (value.length > 80 ||
+    /(description|note|quote|message|help|who|outcome|challenge|solution|result|title|location|copyrightLabel)/i.test(
+      fieldPath,
+    ));
+
+const isLinkField = (fieldPath: string) => /(href|url|path)/i.test(fieldPath);
+
+const getArrayAddSample = (fieldPath: string, arrayTemplate: unknown[], value: unknown[]) => {
+  if (fieldPath === "home.partnersSection.items") {
+    return {
+      name: "New partner",
+      lightLogo: "",
+      darkLogo: "",
+    };
+  }
+
+  return arrayTemplate[0] ?? value[0] ?? "";
+};
 
 const getSelectOptions = (fieldPath: string) => {
   if (fieldPath.includes("home.audiences") && fieldPath.endsWith("iconKey")) {
@@ -77,7 +100,7 @@ const SiteContentEditor = ({
   if (Array.isArray(value)) {
     const arrayTemplate = Array.isArray(template) ? template : [];
     const addItem = () => {
-      const sample = arrayTemplate[0] ?? value[0] ?? "";
+      const sample = getArrayAddSample(fieldPath, arrayTemplate, value);
       onChange([...value, cloneValue(sample)]);
     };
     const moveItem = (fromIndex: number, toIndex: number) => {
@@ -219,6 +242,12 @@ const SiteContentEditor = ({
   }
 
   const stringValue = typeof value === "string" ? value : String(value ?? "");
+  const canUploadAsset = supportsAssetUpload(fieldPath);
+  const uploadButtonLabel = isImageAssetField(fieldPath) ? "Upload image" : "Upload file";
+  const uploadAccept = isImageAssetField(fieldPath) ? "image/*" : undefined;
+  const uploadHint = stringValue.startsWith("data:")
+    ? `Inline ${isImageAssetField(fieldPath) ? "image" : "file"} uploaded. Save changes to publish it.`
+    : null;
 
   if (selectOptions) {
     return (
@@ -243,25 +272,39 @@ const SiteContentEditor = ({
   if (isMultilineField(fieldPath, stringValue)) {
     return (
       <div className="space-y-2">
-        <Label className="text-sm text-white">{label}</Label>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Label className="text-sm text-white">{label}</Label>
+          {canUploadAsset ? (
+            <AssetUploadButton accept={uploadAccept} label={uploadButtonLabel} onValueChange={(nextValue) => onChange(nextValue)} />
+          ) : null}
+        </div>
         <Textarea
           rows={4}
           value={stringValue}
           onChange={(event) => onChange(event.target.value)}
           className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
         />
+        {uploadHint ? <p className="text-xs leading-6 text-slate-300/72">{uploadHint}</p> : null}
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      <Label className="text-sm text-white">{label}</Label>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Label className="text-sm text-white">{label}</Label>
+        {canUploadAsset ? (
+          <AssetUploadButton accept={uploadAccept} label={uploadButtonLabel} onValueChange={(nextValue) => onChange(nextValue)} />
+        ) : null}
+      </div>
       <Input
         value={stringValue}
         onChange={(event) => onChange(event.target.value)}
+        spellCheck={isLinkField(fieldPath) ? false : undefined}
+        placeholder={isLinkField(fieldPath) ? "/page-path, #section, or https://example.com" : undefined}
         className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
       />
+      {uploadHint ? <p className="text-xs leading-6 text-slate-300/72">{uploadHint}</p> : null}
     </div>
   );
 };
