@@ -1,10 +1,17 @@
 import { createRoot } from "react-dom/client";
-import App from "@/app/App";
 import "@/app/styles/index.css";
+import { bootstrapFirebaseRuntimeConfig } from "@/lib/firebase/runtimeConfig";
 import { syncThemePreference } from "@/lib/theme";
 
-if (typeof window !== "undefined") {
-  syncThemePreference();
-}
+const bootstrap = async () => {
+  if (typeof window !== "undefined") {
+    syncThemePreference();
+    await bootstrapFirebaseRuntimeConfig();
+  }
 
-createRoot(document.getElementById("root")!).render(<App />);
+  const { default: App } = await import("@/app/App");
+
+  createRoot(document.getElementById("root")!).render(<App />);
+};
+
+void bootstrap();

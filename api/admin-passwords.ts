@@ -13,16 +13,40 @@ type FirestoreDocument = {
   fields?: Record<string, FirestoreStringField | undefined>;
 };
 
-const json = (res: any, status: number, body: Record<string, unknown>) => {
+type ApiRequest = {
+  method?: string;
+  headers?: Record<string, string | string[] | undefined>;
+  body?: unknown;
+};
+
+type ApiResponse = {
+  status: (statusCode: number) => ApiResponse;
+  setHeader: (name: string, value: string) => ApiResponse;
+  send: (body: string) => void;
+};
+
+const json = (res: ApiResponse, status: number, body: Record<string, unknown>) => {
   res.status(status).setHeader("Content-Type", "application/json");
   res.send(JSON.stringify(body));
 };
 
 const normalizeEnv = (value: string | undefined) => value?.trim() ?? "";
 
-const projectId = normalizeEnv(process.env.FIREBASE_ADMIN_PROJECT_ID) || normalizeEnv(process.env.VITE_FIREBASE_PROJECT_ID);
-const apiKey = normalizeEnv(process.env.FIREBASE_API_KEY) || normalizeEnv(process.env.VITE_FIREBASE_API_KEY);
-const ownerEmail = normalizeEnv(process.env.VITE_ADMIN_OWNER_EMAIL).toLowerCase();
+const firstEnv = (...names: string[]) => {
+  for (const name of names) {
+    const value = normalizeEnv(process.env[name]);
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+};
+
+const projectId = firstEnv("FIREBASE_ADMIN_PROJECT_ID", "VITE_FIREBASE_PROJECT_ID", "NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+const apiKey = firstEnv("FIREBASE_API_KEY", "VITE_FIREBASE_API_KEY", "NEXT_PUBLIC_FIREBASE_API_KEY");
+const ownerEmail = firstEnv("VITE_ADMIN_OWNER_EMAIL", "NEXT_PUBLIC_ADMIN_OWNER_EMAIL").toLowerCase();
 const serviceAccountEmail = normalizeEnv(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
 const serviceAccountPrivateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
 
@@ -182,7 +206,7 @@ const updateFirebaseUserPassword = async (accessToken: string, uid: string, pass
   }
 };
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req: ApiRequest, res: ApiResponse) {
   if (req.method !== "POST") {
     return json(res, 405, { error: "Method not allowed." });
   }

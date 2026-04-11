@@ -6,7 +6,7 @@ This project now supports a secure administration flow for the site-wide content
 
 Create `.env.local` in the project root for local development and copy the keys from `.env.example`.
 
-If you deploy the site, add the same `VITE_*` variables to your hosting provider before building or redeploying. Vite injects these values at build time, so a deployed app will show `Firebase is not configured yet.` if production is missing them.
+If you deploy the site, add the same Firebase values to your hosting provider before building or redeploying. Local Vite development still reads the `VITE_*` variables directly, and deployed builds can now also read them at runtime from the `/api/firebase-config` route on Vercel. If production is missing the values entirely, the app will still show `Firebase is not configured yet.`.
 
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
@@ -24,6 +24,8 @@ FIREBASE_API_KEY=your_api_key
 ```
 
 For this project, the core Firebase values are `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_PROJECT_ID`, and `VITE_FIREBASE_APP_ID`. If `VITE_FIREBASE_AUTH_DOMAIN` is omitted, the app falls back to `your_project_id.firebaseapp.com`. `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, and `VITE_FIREBASE_MEASUREMENT_ID` are optional here.
+
+If you are deploying on Vercel and already stored these values as `NEXT_PUBLIC_FIREBASE_*`, the runtime config route also accepts those names as a fallback. Local development should still keep using the `VITE_*` names from `.env.local`.
 
 The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY` so the `/api/admin-passwords` route can update Firebase Auth users securely. Add those values in your hosting provider too, not only in local development.
 
