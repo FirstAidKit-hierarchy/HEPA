@@ -902,7 +902,7 @@ const AdminPage = () => {
           <p className="mt-3">
             {currentAccessRequest.status === "pending"
               ? adminRequestOwnerEmail
-                ? `The owner review queue has been updated and ${adminRequestOwnerEmail} can approve or decline this request from the admin page.`
+                ? "The owner review queue has been updated. An owner can approve or decline this request from the admin page."
                 : "The owner review queue has been updated. Configure the owner email and Trigger Email extension to send notifications automatically."
               : currentAccessRequest.status === "approved"
                 ? "Approval was recorded. If the editor does not unlock within a few seconds, reload this page."
