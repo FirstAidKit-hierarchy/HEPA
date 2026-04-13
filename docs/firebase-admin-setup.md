@@ -64,7 +64,24 @@ If you want admins to use the `Continue with Google` button on the admin page:
 2. Enable `Google`.
 3. Add every deployment hostname under `Authentication -> Settings -> Authorized domains`.
 
-## 5. Add owner and admin documents
+## 5. Install the Trigger Email extension
+
+For real request and approval emails on GitHub Pages, use the Firebase `Trigger Email` extension (`firestore-send-email`).
+
+1. Open `Extensions`.
+2. Install `Trigger Email`.
+3. Point it at the Firestore collection `mail`.
+4. Configure your SMTP provider or supported email transport during installation.
+
+The admin page now writes email jobs into the `mail` collection when:
+
+- a signed-in user clicks `Request access`
+- an owner approves a request
+- an owner declines a request
+
+This is the recommended email path for GitHub Pages because `/api/*` routes do not run there.
+
+## 6. Add owner and admin documents
 
 Create one document for each admin in the `adminUsers` collection.
 
@@ -82,9 +99,15 @@ Use `role: "owner"` for the primary owner account and `role: "admin"` for regula
 
 If a signed-in user does not have a matching `adminUsers/{uid}` document, they can authenticate but they still cannot edit content.
 
-## 6. Apply Firestore rules
+## 7. Apply Firestore rules
 
-Use rules like these so only allowlisted admins can write the shared site content document and only the owner can manage admin access.
+Use rules like these so:
+
+- only allowlisted admins can write the shared site content document
+- only owners can manage approved admin access
+- signed-in users can create their own pending request
+- owners can review requests
+- the `mail` collection can only be used for the two request-notification flows above
 
 Replace `owner@yourdomain.com` with the owner address, for example `ahuttami@digitalhepa.com`.
 
@@ -92,16 +115,24 @@ Replace `owner@yourdomain.com` with the owner address, for example `ahuttami@dig
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
     function isAdmin() {
-      return request.auth != null &&
+      return isSignedIn() &&
         exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid));
     }
 
     function isOwner() {
-      return request.auth != null && (
+      return isSignedIn() && (
         request.auth.token.email == "owner@yourdomain.com" ||
         get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == "owner"
       );
+    }
+
+    function isRequestOwner(requestId) {
+      return isSignedIn() && request.auth.uid == requestId;
     }
 
     match /siteContent/site-pages {
@@ -114,6 +145,36 @@ service cloud.firestore {
       allow create, update, delete: if isOwner();
     }
 
+    match /adminRequests/{requestId} {
+      allow read: if isOwner() || isRequestOwner(requestId);
+      allow create, update: if isOwner() || (
+        isRequestOwner(requestId) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.email == request.auth.token.email &&
+        request.resource.data.status == "pending" &&
+        request.resource.data.ownerEmail == "owner@yourdomain.com"
+      );
+      allow delete: if isOwner();
+    }
+
+    match /mail/{mailId} {
+      allow create: if isSignedIn() && (
+        (
+          request.resource.data.adminNotificationType == "admin-access-request-submitted" &&
+          request.resource.data.relatedRequestUid == request.auth.uid &&
+          request.resource.data.to == "owner@yourdomain.com"
+        ) ||
+        (
+          isOwner() &&
+          request.resource.data.adminNotificationType == "admin-access-request-reviewed" &&
+          exists(/databases/$(database)/documents/adminRequests/$(request.resource.data.relatedRequestUid)) &&
+          request.resource.data.to ==
+            get(/databases/$(database)/documents/adminRequests/$(request.resource.data.relatedRequestUid)).data.email
+        )
+      );
+      allow read, update, delete: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
@@ -121,7 +182,7 @@ service cloud.firestore {
 }
 ```
 
-## 7. Content document
+## 8. Content document
 
 The editor saves to:
 
@@ -130,17 +191,22 @@ The editor saves to:
 
 You do not need to create this document manually. The admin editor will create it on the first save.
 
-## 8. Admin access flow
+## 9. Admin access flow
 
 After setup:
 
-1. Create the user's Firebase Authentication account first.
-2. Find that user's Firebase Auth UID.
-3. Create or update `adminUsers/{uid}` with the correct `email` and `role`.
-4. The user can then sign in on the admin route and the editor unlocks automatically.
-5. Only the owner can remove access later from the admin panel or by deleting that Firestore admin record.
+1. The user signs in on the admin route.
+2. If the user is not approved yet, they can click `Request access`.
+3. The app creates or refreshes `adminRequests/{uid}` with `status: "pending"`.
+4. The app also creates a new email job in `mail` for the owner.
+5. The owner opens the admin page, reviews the pending queue, and approves or declines the request.
+6. Approval creates or updates `adminUsers/{uid}` with the correct `email` and `role`.
+7. Approval or decline also creates a new email job in `mail` for the requester.
+8. The requester can then sign in on the admin route and the editor unlocks automatically.
 
-## 9. Owner password overrides
+You can still manually create `adminUsers/{uid}` if you want to bypass the request flow for a trusted account.
+
+## 10. Owner password overrides
 
 The admin panel now includes a `Password overrides` section.
 

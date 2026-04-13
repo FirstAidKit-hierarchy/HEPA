@@ -36,11 +36,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import {
+  adminRequestOwnerEmail,
+  approveAdminAccessRequest,
+  declineAdminAccessRequest,
   revokeAdminAccess,
   isOwnerEmail,
   isOwnerUser,
+  submitAdminAccessRequest,
+  subscribeToAdminAccessRequest,
+  subscribeToAdminAccessRequests,
+  subscribeToAdminUserRecord,
   subscribeToAdminUsers,
   updateAdminRole,
+  type AdminAccessRequest,
   type AdminUserRecord,
 } from "@/lib/firebase/adminRequests";
 import { setManagedAdminPassword } from "@/lib/firebase/adminPasswords";
@@ -195,6 +203,19 @@ const maskEmailAddress = (email: string) => {
   return `${maskedLocal}@${maskedDomain}${domainSuffix ? `.${domainSuffix}` : ""}`;
 };
 
+const formatDateTime = (value: string) => {
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value || "Just now";
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(parsedDate);
+};
+
 const AdminPage = () => {
   const { isDark, preference, toggleTheme } = useAppTheme();
   const ThemeIcon = isDark ? Sun : Moon;
@@ -223,6 +244,14 @@ const AdminPage = () => {
   const [publishedContent, setPublishedContent] = useState<SiteContent>(() => createSiteContentDraft(defaultSiteContent));
   const [activeCustomPageId, setActiveCustomPageId] = useState<string | null>(null);
   const [adminUsers, setAdminUsers] = useState<AdminUserRecord[]>([]);
+  const [currentAccessRequest, setCurrentAccessRequest] = useState<AdminAccessRequest | null>(null);
+  const [pendingAccessRequests, setPendingAccessRequests] = useState<AdminAccessRequest[]>([]);
+  const [isSubmittingAccessRequest, setIsSubmittingAccessRequest] = useState(false);
+  const [activeRequestUid, setActiveRequestUid] = useState<string | null>(null);
+
+  const currentAdminRecord = user ? adminUsers.find((admin) => admin.uid === user.uid) ?? null : null;
+  const isOwner = isOwnerUser(user) || currentAdminRecord?.role === "owner";
+  const canManageAccess = isOwner;
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -267,6 +296,8 @@ const AdminPage = () => {
         setDraft(createSiteContentDraft(defaultSiteContent));
         setPublishedContent(createSiteContentDraft(defaultSiteContent));
         setAdminUsers([]);
+        setCurrentAccessRequest(null);
+        setPendingAccessRequests([]);
         setPassword("");
         setIsCheckingSession(false);
         return;
@@ -327,6 +358,72 @@ const AdminPage = () => {
       (error) => {
         console.error("Unable to load current admins.", error);
         toast.error(getErrorMessage(error, "Unable to load current admins."));
+      },
+    );
+  }, [hasAdminAccess, user]);
+
+  useEffect(() => {
+    if (!user || hasAdminAccess) {
+      setCurrentAccessRequest(null);
+      return;
+    }
+
+    return subscribeToAdminAccessRequest(
+      user.uid,
+      (request) => setCurrentAccessRequest(request),
+      (error) => {
+        console.error("Unable to load the current access request.", error);
+        toast.error(getErrorMessage(error, "Unable to load the current access request."));
+      },
+    );
+  }, [hasAdminAccess, user]);
+
+  useEffect(() => {
+    if (!user || !hasAdminAccess || !canManageAccess) {
+      setPendingAccessRequests([]);
+      return;
+    }
+
+    return subscribeToAdminAccessRequests(
+      (requests) => setPendingAccessRequests(requests.filter((request) => request.status === "pending")),
+      (error) => {
+        console.error("Unable to load pending access requests.", error);
+        toast.error(getErrorMessage(error, "Unable to load pending access requests."));
+      },
+    );
+  }, [canManageAccess, hasAdminAccess, user]);
+
+  useEffect(() => {
+    if (!user || hasAdminAccess) {
+      return;
+    }
+
+    return subscribeToAdminUserRecord(
+      user.uid,
+      (adminRecord) => {
+        if (!adminRecord) {
+          return;
+        }
+
+        setHasAdminAccess(true);
+        setIsLoadingContent(true);
+        void loadSiteContent()
+          .then((remoteContent) => {
+            setDraft(createSiteContentDraft(remoteContent));
+            setPublishedContent(createSiteContentDraft(remoteContent));
+            toast.success("Admin access approved. The editor is now unlocked.");
+          })
+          .catch((error) => {
+            console.error("Unable to load the site administration workspace.", error);
+            toast.error(getErrorMessage(error, "Unable to load the site administration workspace."));
+          })
+          .finally(() => {
+            setIsLoadingContent(false);
+            setIsCheckingSession(false);
+          });
+      },
+      (error) => {
+        console.error("Unable to watch admin access changes.", error);
       },
     );
   }, [hasAdminAccess, user]);
@@ -412,6 +509,83 @@ const AdminPage = () => {
       toast.error(getErrorMessage(error, "Unable to send the password reset email."));
     } finally {
       setIsSendingResetEmail(false);
+    }
+  };
+
+  const handleRequestAccess = async () => {
+    if (!user) {
+      toast.error("Sign in first.");
+      return;
+    }
+
+    try {
+      setIsSubmittingAccessRequest(true);
+      const result = await submitAdminAccessRequest(user);
+      setCurrentAccessRequest(result.request);
+      toast.success(
+        result.emailQueued
+          ? "Access request saved and emailed to the owner."
+          : adminRequestOwnerEmail
+            ? "Access request saved to the review queue. Check the Trigger Email setup if no email arrives."
+            : "Access request saved to the review queue.",
+      );
+    } catch (error) {
+      console.error("Unable to submit the access request.", error);
+      toast.error(getErrorMessage(error, "Unable to submit the access request."));
+    } finally {
+      setIsSubmittingAccessRequest(false);
+    }
+  };
+
+  const handleApproveAccessRequest = async (request: AdminAccessRequest) => {
+    if (!user) {
+      return;
+    }
+
+    try {
+      if (!canManageAccess) {
+        toast.error("Only the owner can approve requests.");
+        return;
+      }
+
+      setActiveRequestUid(request.uid);
+      const result = await approveAdminAccessRequest(request, user);
+      toast.success(
+        result.emailQueued
+          ? `Approved ${request.email} and queued the approval email.`
+          : `Approved ${request.email}.`,
+      );
+    } catch (error) {
+      console.error("Unable to approve the access request.", error);
+      toast.error(getErrorMessage(error, "Unable to approve the access request."));
+    } finally {
+      setActiveRequestUid(null);
+    }
+  };
+
+  const handleDeclineAccessRequest = async (request: AdminAccessRequest) => {
+    if (!user) {
+      return;
+    }
+
+    try {
+      if (!canManageAccess) {
+        toast.error("Only the owner can decline requests.");
+        return;
+      }
+
+      setActiveRequestUid(request.uid);
+      const result = await declineAdminAccessRequest(request, user);
+      toast.success(
+        result.emailQueued
+          ? `Declined ${request.email} and queued the decline email.`
+          : `Declined ${request.email}.`,
+      );
+    } catch (error) {
+      console.error("Unable to decline the access request.", error);
+      toast.error(getErrorMessage(error, "Unable to decline the access request."));
+    } finally {
+      setActiveRequestUid(null);
     }
   };
 
@@ -608,18 +782,24 @@ const AdminPage = () => {
   const activeValue = draft[activeSection];
   const activeTemplate = defaultSiteContent[activeSection];
   const activeNotFoundPreviewHref = draft.notFoundPageRoute.aliasPath || NOT_FOUND_PREVIEW_PATH;
-  const currentAdminRecord = user ? adminUsers.find((admin) => admin.uid === user.uid) ?? null : null;
-  const isOwner = isOwnerUser(user) || currentAdminRecord?.role === "owner";
-  const canManageAccess = isOwner;
   const formatVisibleEmail = (email: string) => (isOwner ? email.trim() : maskEmailAddress(email));
   const visibleAdmins = adminUsers;
+  const accessRequestStatus = currentAccessRequest?.status ?? "";
+  const accessRequestStatusLabel =
+    accessRequestStatus === "pending"
+      ? "Access request pending"
+      : accessRequestStatus === "approved"
+        ? "Access request approved"
+        : accessRequestStatus === "declined"
+          ? "Access request declined"
+          : "";
   const selectedManagedPasswordUser = visibleAdmins.find((admin) => admin.uid === selectedManagedPasswordUid) ?? visibleAdmins[0] ?? null;
   const showEditorWorkspace = hasAdminAccess;
   const showAccessScreen = !showEditorWorkspace;
   const administrationTitle = showEditorWorkspace ? "Edit every page from one workspace" : "Secure admin access";
   const administrationDescription = showEditorWorkspace
     ? "This admin panel controls the homepage and shared site shell, custom landing pages, and the 404 page."
-    : "Only approved administrator accounts can unlock this workspace. Sign in with an allowlisted account.";
+    : "Only approved administrator accounts can unlock this workspace. Sign in with an allowlisted account or send a request for review.";
   const administrationPanelContent = !isFirebaseConfigured ? (
     <div className="space-y-4 rounded-[1.5rem] border border-amber-300/18 bg-amber-100/10 p-5 text-sm leading-7 text-slate-100">
       <div className="flex items-center gap-3">
@@ -703,10 +883,49 @@ const AdminPage = () => {
         <p className="font-medium text-white">Signed in, but this account is not allowed to edit.</p>
       </div>
       <p>{user.email ?? "This account"} is signed in, but it does not have an allowlisted admin record yet.</p>
-      <p className="rounded-[1.35rem] border border-white/10 bg-white/[0.06] p-4 text-xs leading-6 text-slate-200/80">
-        Add this user to <code>adminUsers/{'{uid}'}</code> in Firestore, or sign in with an already approved administrator account.
-      </p>
+      {currentAccessRequest ? (
+        <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.06] p-4 text-xs leading-6 text-slate-200/80">
+          <p className="font-semibold uppercase tracking-[0.18em] text-[#79D3FF]">{accessRequestStatusLabel}</p>
+          <p className="mt-3">
+            Submitted: <span className="text-white">{formatDateTime(currentAccessRequest.requestedAt)}</span>
+          </p>
+          {currentAccessRequest.reviewedAt ? (
+            <p className="mt-1">
+              Reviewed: <span className="text-white">{formatDateTime(currentAccessRequest.reviewedAt)}</span>
+            </p>
+          ) : null}
+          {currentAccessRequest.reviewedByEmail ? (
+            <p className="mt-1">
+              Reviewed by: <span className="text-white">{currentAccessRequest.reviewedByEmail}</span>
+            </p>
+          ) : null}
+          <p className="mt-3">
+            {currentAccessRequest.status === "pending"
+              ? adminRequestOwnerEmail
+                ? `The owner review queue has been updated and ${adminRequestOwnerEmail} can approve or decline this request from the admin page.`
+                : "The owner review queue has been updated. Configure the owner email and Trigger Email extension to send notifications automatically."
+              : currentAccessRequest.status === "approved"
+                ? "Approval was recorded. If the editor does not unlock within a few seconds, reload this page."
+                : "This request was declined. You can send a new request after reviewing the account details below."}
+          </p>
+        </div>
+      ) : (
+        <p className="rounded-[1.35rem] border border-white/10 bg-white/[0.06] p-4 text-xs leading-6 text-slate-200/80">
+          Send a request to the owner to review this account. Once approved, this user will be added to{" "}
+          <code>adminUsers/{'{uid}'}</code> automatically.
+        </p>
+      )}
       <div className="flex flex-wrap gap-3">
+        <Button
+          variant="hero"
+          size="sm"
+          onClick={handleRequestAccess}
+          disabled={isSubmittingAccessRequest || currentAccessRequest?.status === "pending"}
+          className="rounded-full"
+        >
+          {isSubmittingAccessRequest ? <Loader2 className="animate-spin" size={16} /> : <Mail size={16} />}
+          {currentAccessRequest?.status === "declined" ? "Request access again" : "Request access"}
+        </Button>
         <Button
           variant="outline"
           size="sm"
@@ -957,14 +1176,67 @@ const AdminPage = () => {
                   <Panel
                     eyebrow="Admin Accounts"
                     title="Access management"
-                    description="Owners can review approved administrator accounts, change roles, and remove access."
+                    description="Owners can review pending requests, approve or decline them, then manage approved administrator accounts."
                   >
                     <div className="space-y-4">
                       {!canManageAccess ? (
                         <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.05] p-4 text-sm leading-7 text-slate-100/78">
-                          Only owner accounts can change roles or remove access.
+                          Only owner accounts can review requests, change roles, or remove access.
                         </div>
                       ) : null}
+
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300/66">Pending requests</p>
+                        {canManageAccess ? (
+                          pendingAccessRequests.length ? (
+                            pendingAccessRequests.map((request) => (
+                              <div key={request.uid} className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] px-4 py-3">
+                                <div className="flex flex-wrap items-start justify-between gap-4">
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-medium text-white">{request.email}</p>
+                                    <p className="mt-1 text-xs leading-6 text-slate-300/70">
+                                      {request.displayName ? `${request.displayName} · ` : ""}
+                                      Requested {formatDateTime(request.requestedAt)}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-wrap gap-2">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleApproveAccessRequest(request)}
+                                      disabled={activeRequestUid === request.uid}
+                                      className="rounded-full border-white/12 bg-white/10 text-white hover:bg-white/14 hover:text-white disabled:opacity-50"
+                                    >
+                                      {activeRequestUid === request.uid ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDeclineAccessRequest(request)}
+                                      disabled={activeRequestUid === request.uid}
+                                      className="rounded-full border-white/12 bg-white/10 text-white hover:bg-white/14 hover:text-white disabled:opacity-50"
+                                    >
+                                      {activeRequestUid === request.uid ? <Loader2 className="animate-spin" size={16} /> : <X size={16} />}
+                                      Decline
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="rounded-[1.35rem] border border-dashed border-white/12 bg-white/[0.03] p-4 text-sm leading-7 text-slate-100/72">
+                              No pending access requests right now.
+                            </div>
+                          )
+                        ) : (
+                          <div className="rounded-[1.35rem] border border-dashed border-white/12 bg-white/[0.03] p-4 text-sm leading-7 text-slate-100/72">
+                            Sign in as an owner account to review pending requests.
+                          </div>
+                        )}
+                      </div>
 
                       <div className="space-y-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300/66">Current admins</p>

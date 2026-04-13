@@ -1,5 +1,5 @@
 import { type User } from "firebase/auth";
-import { collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, setDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, orderBy, query, setDoc } from "firebase/firestore";
 import { firestore } from "@/lib/firebase/client";
 import { ADMIN_PAGE_PATH } from "@/pages/admin/config";
 
@@ -26,11 +26,27 @@ export type AdminUserRecord = {
   grantedByEmail: string;
 };
 
+export type AdminAccessRequestMutationResult = {
+  request: AdminAccessRequest;
+  emailQueued: boolean;
+};
+
 const ADMIN_REQUESTS_COLLECTION = "adminRequests";
 const ADMIN_USERS_COLLECTION = "adminUsers";
+const ADMIN_EMAIL_COLLECTION = "mail";
 const adminRequestsCollectionRef = firestore ? collection(firestore, ADMIN_REQUESTS_COLLECTION) : null;
 const adminUsersCollectionRef = firestore ? collection(firestore, ADMIN_USERS_COLLECTION) : null;
-const ownerEmail = import.meta.env.VITE_ADMIN_OWNER_EMAIL?.trim() ?? "";
+const adminEmailCollectionRef = firestore ? collection(firestore, ADMIN_EMAIL_COLLECTION) : null;
+
+const normalizeEnvValue = (value: string | undefined) => value?.trim() ?? "";
+const readEnvValue = (key: keyof HepaRuntimeEnv) => {
+  const runtimeValue = typeof window !== "undefined" ? window.__HEPA_RUNTIME_CONFIG__?.[key] : undefined;
+  const buildValue = import.meta.env[key];
+
+  return normalizeEnvValue(runtimeValue || buildValue);
+};
+
+const ownerEmail = readEnvValue("VITE_ADMIN_OWNER_EMAIL");
 
 const normalizeString = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 
@@ -40,6 +56,42 @@ const normalizeStatus = (value: unknown): AdminAccessRequestStatus => {
   }
 
   return "pending";
+};
+
+const queueAdminAccessEmail = async ({
+  to,
+  subject,
+  textLines,
+  htmlLines,
+  notificationType,
+  relatedRequestUid,
+}: {
+  to: string;
+  subject: string;
+  textLines: string[];
+  htmlLines: string[];
+  notificationType: "admin-access-request-submitted" | "admin-access-request-reviewed";
+  relatedRequestUid: string;
+}) => {
+  const recipient = normalizeString(to);
+
+  if (!adminEmailCollectionRef || !recipient) {
+    return false;
+  }
+
+  await addDoc(adminEmailCollectionRef, {
+    to: recipient,
+    adminNotificationType: notificationType,
+    relatedRequestUid,
+    createdAt: new Date().toISOString(),
+    message: {
+      subject,
+      text: textLines.filter(Boolean).join("\n"),
+      html: htmlLines.filter(Boolean).join(""),
+    },
+  });
+
+  return true;
 };
 
 const normalizeAdminUserRecord = (uid: string, value: unknown): AdminUserRecord | null => {
@@ -103,11 +155,10 @@ const buildRequestDocument = (user: User) => {
   if (!requesterEmail) {
     throw new Error("This account does not have an email address.");
   }
-  const requesterName = user.displayName?.trim() ?? "";
-  const baseRequest = {
+  return {
     uid: user.uid,
     email: requesterEmail,
-    displayName: requesterName,
+    displayName: user.displayName?.trim() ?? "",
     status: "pending" as const,
     requestedAt: new Date().toISOString(),
     reviewedAt: "",
@@ -115,34 +166,58 @@ const buildRequestDocument = (user: User) => {
     reviewedByEmail: "",
     ownerEmail,
   };
+};
 
+const queueOwnerReviewEmail = async (request: AdminAccessRequest) => {
   if (!ownerEmail) {
-    return baseRequest;
+    return false;
   }
 
   const reviewUrl = getReviewUrl();
 
-  return {
-    ...baseRequest,
-    to: [ownerEmail],
-    message: {
-      subject: `HEPA admin access request: ${requesterEmail}`,
-      text: [
-        `${requesterEmail} requested access to the HEPA admin editor.`,
-        requesterName ? `Display name: ${requesterName}` : "",
-        `Review the request here: ${reviewUrl}`,
-      ]
-        .filter(Boolean)
-        .join("\n"),
-      html: [
-        `<p><strong>${requesterEmail}</strong> requested access to the HEPA admin editor.</p>`,
-        requesterName ? `<p>Display name: ${requesterName}</p>` : "",
-        `<p><a href="${reviewUrl}">Open the admin review page</a></p>`,
-      ]
-        .filter(Boolean)
-        .join(""),
-    },
-  };
+  return queueAdminAccessEmail({
+    to: ownerEmail,
+    subject: `HEPA admin access request: ${request.email}`,
+    textLines: [
+      `${request.email} requested access to the HEPA admin editor.`,
+      request.displayName ? `Display name: ${request.displayName}` : "",
+      `Review the request here: ${reviewUrl}`,
+    ],
+    htmlLines: [
+      `<p><strong>${request.email}</strong> requested access to the HEPA admin editor.</p>`,
+      request.displayName ? `<p>Display name: ${request.displayName}</p>` : "",
+      `<p><a href="${reviewUrl}">Open the admin review page</a></p>`,
+    ],
+    notificationType: "admin-access-request-submitted",
+    relatedRequestUid: request.uid,
+  });
+};
+
+const queueRequesterReviewEmail = async (
+  request: AdminAccessRequest,
+  reviewer: Pick<User, "email">,
+  nextStatus: Extract<AdminAccessRequestStatus, "approved" | "declined">,
+) => {
+  const reviewUrl = getReviewUrl();
+  const reviewerEmail = reviewer.email?.trim() ?? ownerEmail;
+  const outcomeLabel = nextStatus === "approved" ? "approved" : "declined";
+
+  return queueAdminAccessEmail({
+    to: request.email,
+    subject: `HEPA admin access ${outcomeLabel}: ${request.email}`,
+    textLines: [
+      `Your HEPA admin access request has been ${outcomeLabel}.`,
+      reviewerEmail ? `Reviewed by: ${reviewerEmail}` : "",
+      nextStatus === "approved" ? `Sign in here: ${reviewUrl}` : "",
+    ],
+    htmlLines: [
+      `<p>Your HEPA admin access request has been <strong>${outcomeLabel}</strong>.</p>`,
+      reviewerEmail ? `<p>Reviewed by: ${reviewerEmail}</p>` : "",
+      nextStatus === "approved" ? `<p><a href="${reviewUrl}">Open the admin page</a></p>` : "",
+    ],
+    notificationType: "admin-access-request-reviewed",
+    relatedRequestUid: request.uid,
+  });
 };
 
 export const isAdminRequestConfigured = Boolean(firestore);
@@ -242,7 +317,24 @@ export const subscribeToAdminUsers = (
   );
 };
 
-export const submitAdminAccessRequest = async (user: User) => {
+export const subscribeToAdminUserRecord = (
+  uid: string,
+  onValue: (admin: AdminUserRecord | null) => void,
+  onError?: (error: Error) => void,
+) => {
+  if (!firestore) {
+    onValue(null);
+    return () => undefined;
+  }
+
+  return onSnapshot(
+    doc(firestore, ADMIN_USERS_COLLECTION, uid),
+    (snapshot) => onValue(snapshot.exists() ? normalizeAdminUserRecord(snapshot.id, snapshot.data()) : null),
+    (error) => onError?.(error),
+  );
+};
+
+export const submitAdminAccessRequest = async (user: User): Promise<AdminAccessRequestMutationResult> => {
   if (!firestore) {
     throw new Error("Firebase is not configured.");
   }
@@ -253,17 +345,40 @@ export const submitAdminAccessRequest = async (user: User) => {
   if (snapshot.exists()) {
     const existing = normalizeAdminAccessRequest(snapshot.id, snapshot.data());
 
-    if (existing) {
-      return existing;
+    if (existing?.status === "pending") {
+      return {
+        request: existing,
+        emailQueued: false,
+      };
     }
   }
 
   const request = buildRequestDocument(user);
   await setDoc(requestRef, request);
-  return normalizeAdminAccessRequest(user.uid, request);
+  const normalizedRequest = normalizeAdminAccessRequest(user.uid, request);
+
+  if (!normalizedRequest) {
+    throw new Error("Unable to save the access request.");
+  }
+
+  let emailQueued = false;
+
+  try {
+    emailQueued = await queueOwnerReviewEmail(normalizedRequest);
+  } catch (error) {
+    console.error("Unable to queue the owner review email.", error);
+  }
+
+  return {
+    request: normalizedRequest,
+    emailQueued,
+  };
 };
 
-export const approveAdminAccessRequest = async (request: AdminAccessRequest, reviewer: User) => {
+export const approveAdminAccessRequest = async (
+  request: AdminAccessRequest,
+  reviewer: User,
+): Promise<AdminAccessRequestMutationResult> => {
   if (!firestore) {
     throw new Error("Firebase is not configured.");
   }
@@ -271,6 +386,13 @@ export const approveAdminAccessRequest = async (request: AdminAccessRequest, rev
   await assertOwnerReviewer(reviewer);
 
   const reviewedAt = new Date().toISOString();
+  const nextRequest = {
+    ...request,
+    status: "approved" as const,
+    reviewedAt,
+    reviewedByUid: reviewer.uid,
+    reviewedByEmail: reviewer.email?.trim() ?? "",
+  };
 
   await setDoc(
     doc(firestore, ADMIN_USERS_COLLECTION, request.uid),
@@ -287,32 +409,68 @@ export const approveAdminAccessRequest = async (request: AdminAccessRequest, rev
   await setDoc(
     doc(firestore, ADMIN_REQUESTS_COLLECTION, request.uid),
     {
-      status: "approved",
-      reviewedAt,
-      reviewedByUid: reviewer.uid,
-      reviewedByEmail: reviewer.email?.trim() ?? "",
+      status: nextRequest.status,
+      reviewedAt: nextRequest.reviewedAt,
+      reviewedByUid: nextRequest.reviewedByUid,
+      reviewedByEmail: nextRequest.reviewedByEmail,
     },
     { merge: true },
   );
+
+  let emailQueued = false;
+
+  try {
+    emailQueued = await queueRequesterReviewEmail(nextRequest, reviewer, "approved");
+  } catch (error) {
+    console.error("Unable to queue the approval email.", error);
+  }
+
+  return {
+    request: nextRequest,
+    emailQueued,
+  };
 };
 
-export const declineAdminAccessRequest = async (request: AdminAccessRequest, reviewer: User) => {
+export const declineAdminAccessRequest = async (
+  request: AdminAccessRequest,
+  reviewer: User,
+): Promise<AdminAccessRequestMutationResult> => {
   if (!firestore) {
     throw new Error("Firebase is not configured.");
   }
 
   await assertOwnerReviewer(reviewer);
+  const nextRequest = {
+    ...request,
+    status: "declined" as const,
+    reviewedAt: new Date().toISOString(),
+    reviewedByUid: reviewer.uid,
+    reviewedByEmail: reviewer.email?.trim() ?? "",
+  };
 
   await setDoc(
     doc(firestore, ADMIN_REQUESTS_COLLECTION, request.uid),
     {
-      status: "declined",
-      reviewedAt: new Date().toISOString(),
-      reviewedByUid: reviewer.uid,
-      reviewedByEmail: reviewer.email?.trim() ?? "",
+      status: nextRequest.status,
+      reviewedAt: nextRequest.reviewedAt,
+      reviewedByUid: nextRequest.reviewedByUid,
+      reviewedByEmail: nextRequest.reviewedByEmail,
     },
     { merge: true },
   );
+
+  let emailQueued = false;
+
+  try {
+    emailQueued = await queueRequesterReviewEmail(nextRequest, reviewer, "declined");
+  } catch (error) {
+    console.error("Unable to queue the decline email.", error);
+  }
+
+  return {
+    request: nextRequest,
+    emailQueued,
+  };
 };
 
 export const revokeAdminAccess = async (admin: AdminUserRecord, reviewer: User) => {
