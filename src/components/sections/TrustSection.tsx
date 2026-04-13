@@ -47,11 +47,6 @@ const TrustSection = () => {
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-blue/10 text-accent-blue">
                         <Icon size={24} />
                       </div>
-                      {pillar.isPlaceholder ? (
-                        <span className="rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary">
-                          Needs approved copy
-                        </span>
-                      ) : null}
                     </div>
                     <h3 className="mt-5 text-lg font-semibold text-foreground">{pillar.title}</h3>
                     <p className="mt-3 text-sm leading-7 text-muted-foreground">{pillar.description}</p>

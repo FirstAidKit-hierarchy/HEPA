@@ -48,21 +48,13 @@ describe("site content normalization", () => {
     expect(content.customPages[0].blocks[0].primaryAction.label).toBe("Get in touch");
   });
 
-  it("normalizes the optional admin alias path", () => {
+  it("normalizes the optional 404 alias path", () => {
     const content = normalizeSiteContent({
-      adminPage: {
-        aliasPath: " Admin Workspace/ ",
-      },
-      privatePageRoute: {
-        aliasPath: " Attendees/Portal ",
-      },
       notFoundPageRoute: {
         aliasPath: " Preview Missing/ ",
       },
     });
 
-    expect(content.adminPage.aliasPath).toBe("/admin-workspace");
-    expect(content.privatePageRoute.aliasPath).toBe("/attendees/portal");
     expect(content.notFoundPageRoute.aliasPath).toBe("/preview-missing");
   });
 });

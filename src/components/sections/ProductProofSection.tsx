@@ -41,7 +41,6 @@ const ProductProofSection = () => {
               tags={item.tags}
               imageSrc={item.imageSrc}
               imageAlt={item.imageAlt}
-              isPlaceholder={item.isPlaceholder}
               className="h-full"
             />
           </Reveal>

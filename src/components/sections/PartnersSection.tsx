@@ -22,21 +22,17 @@ const getPartnerLogoSource = (partner: PartnerItem, isDark: boolean) => {
   if (isDark) {
     return {
       src: darkLogo || lightLogo,
-      usesFallbackFilter: !darkLogo && Boolean(lightLogo),
     };
   }
 
   return {
     src: lightLogo || darkLogo,
-    usesFallbackFilter: false,
   };
 };
 
 const renderPartnerLogo = (partner: PartnerItem, frameClassName: string, baseClassName: string, isDark: boolean) => {
-  const { src, usesFallbackFilter } = getPartnerLogoSource(partner, isDark);
-  const logoClassName = `${baseClassName} ${partner.logoFitClassName ?? "object-contain"} ${partner.logoClassName ?? ""} ${
-    usesFallbackFilter ? "partner-marquee-logo-filtered" : ""
-  }`;
+  const { src } = getPartnerLogoSource(partner, isDark);
+  const logoClassName = `${baseClassName} ${partner.logoFitClassName ?? "object-contain"} ${partner.logoClassName ?? ""} partner-marquee-logo-filtered`;
 
   return (
     <div className={frameClassName}>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720" fill="none">
+  <rect width="960" height="720" rx="36" fill="#07111F" />
+  <rect x="28" y="28" width="904" height="664" rx="30" fill="url(#panel)" stroke="rgba(121,211,255,0.16)" />
+  <circle cx="742" cy="184" r="164" fill="url(#glowBlue)" opacity="0.65" />
+  <circle cx="190" cy="610" r="210" fill="url(#glowGreen)" opacity="0.28" />
+  <rect x="84" y="82" width="174" height="44" rx="22" fill="#0D2136" stroke="#1F5C85" />
+  <text x="171" y="110" fill="#79D3FF" font-family="Arial, sans-serif" font-size="20" font-weight="700" letter-spacing="0.18em" text-anchor="middle">
+    ISPOR 2024
+  </text>
+  <text x="84" y="196" fill="#E8F3FF" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="0.26em">
+    REFERENCE PROJECT
+  </text>
+  <text x="84" y="282" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="54" font-weight="700">
+    Economic Burden Impact
+  </text>
+  <text x="84" y="346" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="54" font-weight="700">
+    of Thyroid Eye Disease
+  </text>
+  <text x="84" y="410" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="54" font-weight="700">
+    in the United Arab Emirates
+  </text>
+  <text x="84" y="488" fill="#A9C2D8" font-family="Arial, sans-serif" font-size="26">
+    HEPA published reference preview
+  </text>
+  <rect x="84" y="548" width="286" height="54" rx="27" fill="#10263D" stroke="#235C87" />
+  <text x="227" y="582" fill="#7ED957" font-family="Arial, sans-serif" font-size="24" font-weight="700" text-anchor="middle">
+    UNITED ARAB EMIRATES
+  </text>
+  <g opacity="0.92">
+    <ellipse cx="744" cy="370" rx="128" ry="90" fill="#0B2035" stroke="#2C8ABF" stroke-width="10" />
+    <circle cx="744" cy="370" r="42" fill="#79D3FF" opacity="0.92" />
+    <circle cx="744" cy="370" r="18" fill="#07111F" />
+    <path d="M632 370C661 311 709 276 744 276C779 276 827 311 856 370C827 429 779 464 744 464C709 464 661 429 632 370Z" stroke="#7ED957" stroke-width="10" opacity="0.72" />
+  </g>
+  <defs>
+    <linearGradient id="panel" x1="102" y1="64" x2="876" y2="656" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B1727" />
+      <stop offset="0.54" stop-color="#081220" />
+      <stop offset="1" stop-color="#0E2337" />
+    </linearGradient>
+    <radialGradient id="glowBlue" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(742 184) rotate(90) scale(164)">
+      <stop stop-color="#2C8ABF" />
+      <stop offset="1" stop-color="#2C8ABF" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glowGreen" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(190 610) rotate(90) scale(210)">
+      <stop stop-color="#7ED957" />
+      <stop offset="1" stop-color="#7ED957" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+</svg>

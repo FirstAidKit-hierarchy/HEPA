@@ -221,7 +221,7 @@ const CustomPageView = ({ page }: { page: CustomPage }) => {
           <section className="py-14 sm:py-16">
             <div className="section-container">
               <div className="rounded-[2rem] border border-dashed border-border bg-card/70 px-6 py-10 text-center text-sm leading-7 text-muted-foreground">
-                This page does not have any blocks yet. Open the admin builder to add the first section.
+                This page is currently unavailable. Please return to the main site or contact HEPA for more information.
               </div>
             </div>
           </section>

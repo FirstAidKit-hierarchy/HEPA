@@ -32,7 +32,6 @@ import {
 } from "@/content/home";
 import { navigationLinks } from "@/content/navigation";
 import { normalizeOptionalPagePath, normalizePagePath } from "@/lib/site-pages";
-import { createWorkshopContentDraft, workshopContent } from "@/pages/private/content";
 
 const audienceIconKeyMap = new Map<LucideIcon, string>([
   [Pill, "pill"],
@@ -307,11 +306,11 @@ const baseSiteContent = {
     ctaPanels: cloneValue(ctaPanels),
     productProof: {
       ...cloneValue(productProofContent),
-      supportingPanelEyebrow: "Designed for easy asset replacement",
+      supportingPanelEyebrow: "What teams can review",
     },
     caseStudies: {
       ...cloneValue(caseStudiesContent),
-      placeholderBadge: "Placeholder case study",
+      badgeLabel: "Project snapshot",
     },
     workflow: cloneValue(workflowContent),
     trust: {
@@ -323,15 +322,14 @@ const baseSiteContent = {
         iconKey: trustIconKeyMap.get(pillar.icon) ?? "globe",
         title: pillar.title,
         description: pillar.description,
-        isPlaceholder: Boolean(pillar.isPlaceholder),
       })),
       testimonial: { ...trustContent.testimonial },
       launchChecklist: {
-        eyebrow: "What should be confirmed before launch",
+        eyebrow: "What teams can expect",
         items: [
-          "Approved privacy and data-handling language",
-          "Founder or leadership credentials that can be published",
-          "Approved client quote or testimonial text",
+          "Regional pricing and access context across GCC markets",
+          "Structured evidence and stakeholder-input workflows",
+          "Decision-ready reports, dashboards, and export packages",
         ],
       },
     },
@@ -369,13 +367,6 @@ const baseSiteContent = {
       })),
     },
   },
-  adminPage: {
-    aliasPath: "",
-  },
-  privatePageRoute: {
-    aliasPath: "",
-  },
-  privatePage: createWorkshopContentDraft(workshopContent),
   notFoundPageRoute: {
     aliasPath: "",
   },
@@ -407,20 +398,6 @@ export const normalizeSiteContent = (value: unknown): SiteContent => {
 
   return {
     ...merged,
-    adminPage: {
-      aliasPath: normalizeOptionalPagePath(
-        isPlainObject(source.adminPage) && typeof source.adminPage.aliasPath === "string"
-          ? source.adminPage.aliasPath
-          : defaultSiteContent.adminPage.aliasPath,
-      ),
-    },
-    privatePageRoute: {
-      aliasPath: normalizeOptionalPagePath(
-        isPlainObject(source.privatePageRoute) && typeof source.privatePageRoute.aliasPath === "string"
-          ? source.privatePageRoute.aliasPath
-          : defaultSiteContent.privatePageRoute.aliasPath,
-      ),
-    },
     notFoundPageRoute: {
       aliasPath: normalizeOptionalPagePath(
         isPlainObject(source.notFoundPageRoute) && typeof source.notFoundPageRoute.aliasPath === "string"

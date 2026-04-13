@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
 type FirebaseLookupUser = {
   localId?: string;
@@ -32,6 +34,12 @@ const json = (res: ApiResponse, status: number, body: Record<string, unknown>) =
 
 const normalizeEnv = (value: string | undefined) => value?.trim() ?? "";
 
+type LocalServiceAccount = {
+  projectId: string;
+  clientEmail: string;
+  privateKey: string;
+};
+
 const firstEnv = (...names: string[]) => {
   for (const name of names) {
     const value = normalizeEnv(process.env[name]);
@@ -44,11 +52,47 @@ const firstEnv = (...names: string[]) => {
   return "";
 };
 
-const projectId = firstEnv("FIREBASE_ADMIN_PROJECT_ID", "VITE_FIREBASE_PROJECT_ID", "NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+const loadLocalServiceAccount = (): LocalServiceAccount => {
+  const serviceAccountPath = path.join(process.cwd(), "firebase-service-account.local.json");
+
+  try {
+    if (!fs.existsSync(serviceAccountPath)) {
+      return {
+        projectId: "",
+        clientEmail: "",
+        privateKey: "",
+      };
+    }
+
+    const payload = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8")) as {
+      project_id?: string;
+      client_email?: string;
+      private_key?: string;
+    };
+
+    return {
+      projectId: normalizeEnv(payload.project_id),
+      clientEmail: normalizeEnv(payload.client_email),
+      privateKey: normalizeEnv(payload.private_key),
+    };
+  } catch {
+    return {
+      projectId: "",
+      clientEmail: "",
+      privateKey: "",
+    };
+  }
+};
+
+const localServiceAccount = loadLocalServiceAccount();
+
+const projectId =
+  firstEnv("FIREBASE_ADMIN_PROJECT_ID", "VITE_FIREBASE_PROJECT_ID", "NEXT_PUBLIC_FIREBASE_PROJECT_ID") ||
+  localServiceAccount.projectId;
 const apiKey = firstEnv("FIREBASE_API_KEY", "VITE_FIREBASE_API_KEY", "NEXT_PUBLIC_FIREBASE_API_KEY");
 const ownerEmail = firstEnv("VITE_ADMIN_OWNER_EMAIL", "NEXT_PUBLIC_ADMIN_OWNER_EMAIL").toLowerCase();
-const serviceAccountEmail = normalizeEnv(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
-const serviceAccountPrivateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
+const serviceAccountEmail = normalizeEnv(process.env.FIREBASE_ADMIN_CLIENT_EMAIL) || localServiceAccount.clientEmail;
+const serviceAccountPrivateKey = (process.env.FIREBASE_ADMIN_PRIVATE_KEY ?? localServiceAccount.privateKey ?? "").replace(/\\n/g, "\n");
 
 const requiredScopes = [
   "https://www.googleapis.com/auth/identitytoolkit",

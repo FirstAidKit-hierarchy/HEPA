@@ -9,6 +9,7 @@ Create `.env.local` in the project root for local development and copy the keys 
 If you deploy the site, add the same Firebase values to your hosting provider before building or redeploying. Local Vite development still reads the `VITE_*` variables directly, and deployed builds can now also read them at runtime from the `/api/firebase-config` route on Vercel. If production is missing the values entirely, the app will still show `Firebase is not configured yet.`.
 
 ```env
+VITE_ADMIN_PATH=/admin
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
@@ -25,9 +26,19 @@ FIREBASE_API_KEY=your_api_key
 
 For this project, the core Firebase values are `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_PROJECT_ID`, and `VITE_FIREBASE_APP_ID`. If `VITE_FIREBASE_AUTH_DOMAIN` is omitted, the app falls back to `your_project_id.firebaseapp.com`. `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, and `VITE_FIREBASE_MEASUREMENT_ID` are optional here.
 
+`VITE_ADMIN_PATH` controls the fixed admin route at build time. Set it to a non-public path you want to use for the editor, then rebuild or redeploy the site.
+
 If you are deploying on Vercel and already stored these values as `NEXT_PUBLIC_FIREBASE_*`, the runtime config route also accepts those names as a fallback. Local development should still keep using the `VITE_*` names from `.env.local`.
 
 The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY` so the `/api/admin-passwords` route can update Firebase Auth users securely. Add those values in your hosting provider too, not only in local development.
+
+For repeatable setup, you can keep a local server-only service-account file at `firebase-service-account.local.json` and run:
+
+```bash
+npm run sync:firebase-admin
+```
+
+The script reads `.env.local` plus `firebase-service-account.local.json` and upserts the required Firebase values into the linked Vercel project. The example shape is in `firebase-service-account.local.example.json`. Do not commit the real `.local.json` file.
 
 ## 2. Enable authentication providers
 
@@ -35,7 +46,7 @@ In the Firebase console:
 
 1. Open `Authentication`.
 2. Enable `Email/Password`.
-3. On the first login, an admin can use the admin page to create their own password with their email address.
+3. Create each administrator account in Firebase Authentication before giving that user editor access.
 4. After sign-in, admins can change their password from the admin page. If they forget it, they can use the reset email flow there as well.
 
 If you deploy on more than one hostname or custom domain, add each one under `Authentication -> Settings -> Authorized domains`. The app can run on any domain, but Firebase Auth still blocks sign-in from domains that are not explicitly authorized in your Firebase project.
@@ -45,19 +56,13 @@ If you deploy on more than one hostname or custom domain, add each one under `Au
 1. Open `Firestore Database`.
 2. Create the database in production mode.
 
-## 4. Optional: install the Trigger Email extension
+## 4. Optional: enable Google sign-in
 
-The access request flow works without email. A signed-in non-admin can submit a request, and only the owner can review it from the admin panel.
+If you want admins to use the `Continue with Google` button on the admin page:
 
-If you also want the owner to receive an email when someone submits a request, install the official Firebase Trigger Email extension and point it at the `adminRequests` collection.
-
-- Official docs: https://firebase.google.com/docs/extensions/official/firestore-send-email
-- During setup:
-  - choose your SMTP provider
-  - set the email collection path to `adminRequests`
-  - keep the default sender or configure your preferred sender address
-
-When `VITE_ADMIN_OWNER_EMAIL` is set, the app writes `to` and `message` fields into each new `adminRequests/{uid}` document, which the extension uses to send the owner email.
+1. Open `Authentication -> Sign-in method`.
+2. Enable `Google`.
+3. Add every deployment hostname under `Authentication -> Settings -> Authorized domains`.
 
 ## 5. Add owner and admin documents
 
@@ -79,7 +84,7 @@ If a signed-in user does not have a matching `adminUsers/{uid}` document, they c
 
 ## 6. Apply Firestore rules
 
-Use rules like these so only allowlisted admins can write the shared site content document, only signed-in users can submit their own access requests, and only the owner can approve, decline, or revoke admin access.
+Use rules like these so only allowlisted admins can write the shared site content document and only the owner can manage admin access.
 
 Replace `owner@yourdomain.com` with the owner address, for example `ahuttami@digitalhepa.com`.
 
@@ -104,19 +109,6 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    match /adminRequests/{userId} {
-      allow create: if request.auth != null
-        && request.auth.uid == userId
-        && !exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.status == "pending";
-
-      allow read: if isAdmin() || (request.auth != null && request.auth.uid == userId);
-      allow update: if isOwner();
-      allow delete: if false;
-    }
-
     match /adminUsers/{userId} {
       allow read: if isAdmin();
       allow create, update, delete: if isOwner();
@@ -138,17 +130,15 @@ The editor saves to:
 
 You do not need to create this document manually. The admin editor will create it on the first save.
 
-## 8. Access request flow
+## 8. Admin access flow
 
 After setup:
 
-1. A signed-in user without admin access sees a `Request owner approval` button.
-2. Clicking it creates `adminRequests/{uid}`.
-3. Only the owner reviews the request from the admin page and clicks `Approve` or `Decline`.
-4. Approving creates or updates `adminUsers/{uid}`, which unlocks the editor for that user.
-5. Only the owner can remove access later by deleting that user's admin record from the admin panel.
-
-If you install the Trigger Email extension and set `VITE_ADMIN_OWNER_EMAIL`, step 2 will also send the owner an email notification automatically.
+1. Create the user's Firebase Authentication account first.
+2. Find that user's Firebase Auth UID.
+3. Create or update `adminUsers/{uid}` with the correct `email` and `role`.
+4. The user can then sign in on the admin route and the editor unlocks automatically.
+5. Only the owner can remove access later from the admin panel or by deleting that Firestore admin record.
 
 ## 9. Owner password overrides
 

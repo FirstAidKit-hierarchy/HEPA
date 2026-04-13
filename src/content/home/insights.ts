@@ -16,26 +16,25 @@ export const insightsContent = {
   eyebrow: "Insights and published work",
   title: "Thought leadership, market updates, and reference projects teams can build on",
   description:
-    "Use this section for HEPA articles, downloadable reports, and GCC access insights. The featured cards are placeholders until approved editorial content is available.",
-  // Placeholder insight cards below should be replaced with approved editorial titles, links, and summaries.
+    "This section highlights editorial themes, market updates, and published HEPA work relevant to pricing, evidence, and access teams across the GCC.",
   featured: [
     {
-      category: "Placeholder Article",
+      category: "Article Theme",
       title: "GCC pricing benchmark planning for launch teams",
-      description: "Placeholder summary for an article or downloadable report about launch pricing preparation.",
-      ctaLabel: "Add Article Link",
+      description: "A look at the pricing questions, comparator markets, and stakeholder inputs teams should align before launch planning accelerates.",
+      ctaLabel: "Editorial focus",
     },
     {
-      category: "Placeholder Market Update",
+      category: "Market Update",
       title: "What access teams should validate before stakeholder research begins",
-      description: "Placeholder summary for a short market-access update or checklist.",
-      ctaLabel: "Add Update Link",
+      description: "A practical checklist covering audience selection, local context, and research structure before stakeholder outreach starts.",
+      ctaLabel: "Coverage topic",
     },
     {
-      category: "Placeholder Report",
+      category: "Report Theme",
       title: "Designing better survey inputs for evidence and reimbursement questions",
-      description: "Placeholder summary for a static report or gated PDF preview.",
-      ctaLabel: "Add Report Link",
+      description: "An overview of how better survey design improves the quality of evidence, reimbursement discussions, and downstream reporting.",
+      ctaLabel: "Featured brief",
     },
   ] satisfies FeaturedInsight[],
   publishedReferencesHeading: {
@@ -52,6 +51,8 @@ export const insightsContent = {
     {
       title: "Economic Burden Impact of Thyroid Eye Disease in the United Arab Emirates",
       href: "https://www.ispor.org/heor-resources/presentations-database/presentation/intl2024-3900/137608",
+      previewImage: "/ted-uae-preview.svg",
+      previewAlt: "Preview slide for thyroid eye disease economic burden in the United Arab Emirates",
     },
     {
       title:

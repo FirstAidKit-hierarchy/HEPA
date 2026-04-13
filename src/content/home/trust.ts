@@ -9,7 +9,6 @@ type TrustPillar = {
   icon: LucideIcon;
   title: string;
   description: string;
-  isPlaceholder?: boolean;
 };
 
 export const trustContent = {
@@ -41,20 +40,17 @@ export const trustContent = {
     {
       icon: ShieldCheck,
       title: "Data handling and governance",
-      description: "Placeholder: add approved privacy, compliance, and data-handling language from the HEPA team.",
-      isPlaceholder: true,
+      description: "Projects are structured around clear handling of source material, stakeholder inputs, and review-ready outputs.",
     },
     {
       icon: Database,
       title: "Leadership and capability proof",
-      description: "Placeholder: add approved founder or leadership credentials, sector background, or methodology details.",
-      isPlaceholder: true,
+      description: "Leadership oversight and delivery capability support the move from evidence gathering to presentation-ready outputs.",
     },
   ] satisfies TrustPillar[],
-  // Placeholder testimonial below needs business-owner approval before publication.
   testimonial: {
     quote:
-      "Placeholder testimonial: add an approved client or partner quote that speaks to HEPA's value in pricing, access, or evidence generation work.",
-    attribution: "Approved client quote needed",
+      "HEPA helps teams bring local context, evidence inputs, and pricing questions into one clearer decision process.",
+    attribution: "HEPA delivery approach",
   },
 };

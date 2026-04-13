@@ -2,8 +2,10 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import RouteScrollManager from "./RouteScrollManager";
 import { appRoutes } from "./routes";
 
+const routerBasename = import.meta.env.BASE_URL.replace(/\/+$/, "") || "/";
+
 const AppRouter = () => (
-  <BrowserRouter>
+  <BrowserRouter basename={routerBasename}>
     <RouteScrollManager />
     <Routes>
       {appRoutes.map((route) => (

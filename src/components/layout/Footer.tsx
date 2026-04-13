@@ -1,6 +1,7 @@
 import { Linkedin, Mail, MapPin } from "lucide-react";
 import { SiteLink } from "@/components/common";
 import { useSiteContent } from "@/components/providers";
+import { withBasePath } from "@/lib/site-pages";
 
 const Footer = () => {
   const {
@@ -15,7 +16,7 @@ const Footer = () => {
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_220px_260px]">
           <div>
             <img
-              src="/icons/hepa-logo.svg"
+              src={withBasePath("/icons/hepa-logo.svg")}
               alt="HEPA"
               className="h-8 transition-transform duration-300 hover:scale-105 dark:brightness-0 dark:invert"
             />

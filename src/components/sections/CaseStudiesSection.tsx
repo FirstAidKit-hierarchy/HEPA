@@ -30,7 +30,7 @@ const CaseStudiesSection = () => {
                   {study.clientType}
                 </span>
                 <span className="rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-primary">
-                  {caseStudies.placeholderBadge}
+                  {caseStudies.badgeLabel}
                 </span>
               </div>
               <h3 className="mt-5 text-2xl font-semibold leading-tight text-foreground">{study.title}</h3>

@@ -77,4 +77,27 @@ export const normalizeAppHref = (value: string) => {
   return `${normalizedPath}${searchFragment ? `?${searchFragment}` : ""}${hashFragment ? `#${hashFragment}` : ""}`;
 };
 
+export const withBasePath = (value: string) => {
+  const trimmed = value.trim();
+
+  if (!trimmed || !trimmed.startsWith("/")) {
+    return trimmed;
+  }
+
+  const baseUrl = import.meta.env.BASE_URL || "/";
+  const normalizedBase = baseUrl === "/" ? "" : baseUrl.replace(/\/+$/, "");
+
+  return `${normalizedBase}${trimmed}`;
+};
+
+export const resolveAppHref = (value: string) => {
+  const normalizedHref = normalizeAppHref(value);
+
+  if (!isInternalPathHref(normalizedHref)) {
+    return normalizedHref;
+  }
+
+  return withBasePath(normalizedHref);
+};
+
 export const pagePathsMatch = (left: string, right: string) => normalizePagePath(left) === normalizePagePath(right);

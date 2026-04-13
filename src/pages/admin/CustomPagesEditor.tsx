@@ -11,7 +11,7 @@ import { normalizeOptionalPagePath, normalizePagePath } from "@/lib/site-pages";
 import { cn } from "@/lib/utils";
 import { ADMIN_PAGE_PATH } from "@/pages/admin/config";
 import { NOT_FOUND_PREVIEW_PATH } from "@/pages/not-found/config";
-import { PRIVATE_PAGE_PATH } from "@/pages/private/config";
+import { REFERENCE_PROJECTS_PATH } from "@/pages/reference-projects/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -102,9 +102,7 @@ const StringListEditor = ({
 );
 
 type CustomPagesEditorProps = {
-  adminAliasPath: string;
   notFoundAliasPath: string;
-  privateAliasPath: string;
   value: CustomPage[];
   onChange: (nextValue: CustomPage[]) => void;
   selectedPageId: string | null;
@@ -112,9 +110,7 @@ type CustomPagesEditorProps = {
 };
 
 const CustomPagesEditor = ({
-  adminAliasPath,
   notFoundAliasPath,
-  privateAliasPath,
   value,
   onChange,
   selectedPageId,
@@ -122,17 +118,13 @@ const CustomPagesEditor = ({
 }: CustomPagesEditorProps) => {
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
-  const normalizedAdminAliasPath = normalizeOptionalPagePath(adminAliasPath);
-  const normalizedPrivateAliasPath = normalizeOptionalPagePath(privateAliasPath);
   const normalizedNotFoundAliasPath = normalizeOptionalPagePath(notFoundAliasPath);
   const reservedPaths = new Set(
     [
       normalizePagePath("/"),
       normalizePagePath(ADMIN_PAGE_PATH),
-      normalizePagePath(PRIVATE_PAGE_PATH),
       normalizePagePath(NOT_FOUND_PREVIEW_PATH),
-      normalizedAdminAliasPath,
-      normalizedPrivateAliasPath,
+      normalizePagePath(REFERENCE_PROJECTS_PATH),
       normalizedNotFoundAliasPath,
     ].filter(Boolean),
   );
@@ -451,7 +443,7 @@ const CustomPagesEditor = ({
                   <p className="mt-3 text-xs leading-6 text-amber-200/90">
                     {selectedPathIsDuplicate
                       ? "This URL is already used by another custom page. Keep each path unique."
-                      : "This URL conflicts with a built-in route. Avoid using /, the admin path, or the private page path."}
+                      : "This URL conflicts with a built-in route. Avoid using /, the admin path, the 404 preview path, or the reference projects path."}
                   </p>
                 ) : null}
               </div>

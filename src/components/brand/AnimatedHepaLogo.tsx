@@ -1,4 +1,5 @@
 import { type CSSProperties, useEffect, useState } from "react";
+import { withBasePath } from "@/lib/site-pages";
 
 interface AnimatedHepaLogoProps {
   dark?: boolean;
@@ -16,7 +17,7 @@ const AnimatedHepaLogo = ({
   alt = "HEPA Solutions",
 }: AnimatedHepaLogoProps) => {
   const [isAnimating, setIsAnimating] = useState(autoPlay);
-  const logoSrc = dark ? "/icons/hepa-logo-dark.svg" : "/icons/hepa-logo.svg";
+  const logoSrc = withBasePath(dark ? "/icons/hepa-logo-dark.svg" : "/icons/hepa-logo.svg");
   const animationModeClass = autoPlay && isAnimating ? "hepa-logo-sweep-autoplay" : "hepa-logo-sweep-interactive";
   const style = {
     "--hepa-logo-accent": "#7ed957",

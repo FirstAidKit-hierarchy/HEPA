@@ -1,4 +1,5 @@
-export const ADMIN_PAGE_PATH = "/__admin/8f73c9e1c5b64cf2a4d1b8ef6a92f0dc";
+import { normalizePagePath } from "@/lib/site-pages";
 
+export const ADMIN_PAGE_PATH = normalizePagePath(import.meta.env.VITE_ADMIN_PATH || "/admin");
 export const ADMIN_PAGE_TITLE = "HEPA Administration";
 export const ADMIN_PAGE_ROBOTS = "noindex,nofollow,noarchive,nosnippet";

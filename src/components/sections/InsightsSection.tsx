@@ -1,45 +1,9 @@
-import { ExternalLink } from "lucide-react";
-import { Reveal, SectionHeading } from "@/components/common";
+import { ArrowRight, BookOpenText, FolderKanban, ImageIcon } from "lucide-react";
+import { Reveal, SectionHeading, SiteLink } from "@/components/common";
+import { Button } from "@/components/ui/button";
+import { hasReferenceProjectPreview } from "@/lib/reference-projects";
 import { useSiteContent } from "@/components/providers";
-
-const ReferenceCard = ({
-  title,
-  href,
-  previewImage,
-  previewAlt,
-}: {
-  title: string;
-  href: string;
-  previewImage?: string;
-  previewAlt?: string;
-}) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noreferrer"
-    className="group flex items-start justify-between gap-4 rounded-[1.35rem] border border-border/70 bg-card/95 p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-blue/25 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]"
-  >
-    <div className="flex min-w-0 flex-1 items-start gap-4">
-      {previewImage ? (
-        <div className="hidden h-24 w-32 shrink-0 overflow-hidden rounded-[1.1rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(240,247,252,0.9))] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)] sm:flex dark:bg-[linear-gradient(180deg,rgba(17,24,39,0.82),rgba(8,15,28,0.88))]">
-          <img
-            src={previewImage}
-            alt={previewAlt ?? title}
-            className="h-full w-full rounded-[0.8rem] object-contain"
-            loading="lazy"
-          />
-        </div>
-      ) : null}
-      <div className="min-w-0">
-        <span className="text-sm leading-6 text-foreground">{title}</span>
-        {previewImage ? (
-          <p className="mt-2 text-xs font-medium uppercase tracking-[0.18em] text-accent-blue">Preview available</p>
-        ) : null}
-      </div>
-    </div>
-    <ExternalLink size={16} className="mt-1 shrink-0 text-accent-blue transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-  </a>
-);
+import { REFERENCE_PROJECTS_PATH } from "@/pages/reference-projects/config";
 
 const InsightsSection = () => {
   const {
@@ -48,6 +12,8 @@ const InsightsSection = () => {
     },
   } = useSiteContent();
   const { eyebrow, title, description, featured, publishedReferences, publishedReferencesHeading } = insights;
+  const previewCount = publishedReferences.filter((reference) => hasReferenceProjectPreview(reference)).length;
+  const featuredReferenceTitles = publishedReferences.slice(0, 3);
 
   return (
     <section id="insights" className="py-16 sm:py-20">
@@ -80,13 +46,51 @@ const InsightsSection = () => {
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-accent-blue">
                   {publishedReferencesHeading.eyebrow}
                 </p>
-                <h3 className="mt-4 text-2xl font-semibold text-foreground">{publishedReferencesHeading.title}</h3>
-                <div className="mt-6 space-y-4">
-                  {publishedReferences.map((reference, index) => (
-                    <Reveal key={reference.href} delay={index * 70}>
-                      <ReferenceCard {...reference} />
-                    </Reveal>
-                  ))}
+                <h3 className="mt-4 text-2xl font-semibold text-foreground">Reference projects now have their own page</h3>
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+                  The full library of published HEPA reference projects now lives on a dedicated page, so the home page stays focused while the complete archive remains easy to browse.
+                </p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-[1.35rem] border border-border/70 bg-card/95 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+                    <FolderKanban size={18} className="text-accent-blue" />
+                    <p className="mt-4 text-sm font-semibold text-foreground">{publishedReferences.length} published projects</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">Browse all references in one dedicated archive.</p>
+                  </div>
+                  <div className="rounded-[1.35rem] border border-border/70 bg-card/95 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+                    <ImageIcon size={18} className="text-accent-blue" />
+                    <p className="mt-4 text-sm font-semibold text-foreground">{previewCount} preview images</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">Preview artwork is shown whenever a reference has one assigned.</p>
+                  </div>
+                  <div className="rounded-[1.35rem] border border-border/70 bg-card/95 p-4 shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
+                    <BookOpenText size={18} className="text-accent-blue" />
+                    <p className="mt-4 text-sm font-semibold text-foreground">External source links</p>
+                    <p className="mt-2 text-sm leading-6 text-muted-foreground">Each project opens the original publication in a new tab.</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-[1.45rem] border border-border/70 bg-card/90 p-5 shadow-[0_18px_40px_rgba(15,23,42,0.05)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-blue">Featured inside the archive</p>
+                  {featuredReferenceTitles.length ? (
+                    <ul className="mt-4 space-y-3">
+                      {featuredReferenceTitles.map((reference) => (
+                        <li key={reference.href} className="text-sm leading-7 text-foreground/88">
+                          {reference.title}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-4 text-sm leading-7 text-muted-foreground">Published references will appear here when available.</p>
+                  )}
+                </div>
+
+                <div className="mt-8">
+                  <Button variant="hero" size="lg" asChild className="rounded-full px-6">
+                    <SiteLink href={REFERENCE_PROJECTS_PATH}>
+                      Open reference projects
+                      <ArrowRight size={16} />
+                    </SiteLink>
+                  </Button>
                 </div>
               </div>
             </Reveal>

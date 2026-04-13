@@ -1,3 +1,4 @@
+import { withBasePath } from "@/lib/site-pages";
 import { sharedCtas } from "./cta";
 
 export const heroContent = {
@@ -9,7 +10,7 @@ export const heroContent = {
   primaryCta: sharedCtas.primary,
   downloadCta: {
     label: "Download HEPA Profile",
-    href: "/documents/HEPA%20Company%20Profile%202026%20for%20Extrnal%20Use.pdf",
+    href: withBasePath("/documents/HEPA%20Company%20Profile%202026%20for%20Extrnal%20Use.pdf"),
     download: "HEPA-Business-Profile-2026.pdf",
   },
   quickPoints: [

@@ -10,11 +10,10 @@ type ProductPreviewCardProps = {
   tags: string[];
   imageSrc?: string;
   imageAlt?: string;
-  isPlaceholder?: boolean;
   className?: string;
 };
 
-const PlaceholderPreview = ({ previewType }: { previewType: ProductPreviewType }) => {
+const IllustrativePreview = ({ previewType }: { previewType: ProductPreviewType }) => {
   switch (previewType) {
     case "dashboard":
       return (
@@ -163,7 +162,6 @@ const ProductPreviewCard = ({
   tags,
   imageSrc,
   imageAlt,
-  isPlaceholder,
   className,
 }: ProductPreviewCardProps) => (
   <article
@@ -175,13 +173,13 @@ const ProductPreviewCard = ({
     <div className="border-b border-border/60 p-5 sm:p-6">
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-accent-blue">{eyebrow}</p>
-        {isPlaceholder ? (
+        {!imageSrc ? (
           <span className="rounded-full border border-accent-blue/20 bg-accent-blue/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-accent-blue">
-            Placeholder
+            Workflow view
           </span>
         ) : (
           <span className="rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary">
-            Live asset
+            Preview asset
           </span>
         )}
       </div>
@@ -200,7 +198,7 @@ const ProductPreviewCard = ({
           {imageSrc ? (
             <img src={imageSrc} alt={imageAlt ?? title} className="h-full w-full rounded-[1rem] object-cover shadow-sm" />
           ) : (
-            <PlaceholderPreview previewType={previewType} />
+            <IllustrativePreview previewType={previewType} />
           )}
         </div>
       </div>

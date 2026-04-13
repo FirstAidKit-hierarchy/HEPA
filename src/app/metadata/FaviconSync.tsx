@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAppTheme } from "@/components/providers";
+import { withBasePath } from "@/lib/site-pages";
 
 const FaviconSync = () => {
   const { isDark } = useAppTheme();
@@ -14,7 +15,7 @@ const FaviconSync = () => {
       document.head.appendChild(link);
     }
 
-    link.href = isDark ? "/icons/hepa-logo-dark-icon.svg" : "/icons/hepa-logo-icon.svg";
+    link.href = withBasePath(isDark ? "/icons/hepa-logo-dark-icon.svg" : "/icons/hepa-logo-icon.svg");
   }, [isDark]);
 
   return null;

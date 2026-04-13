@@ -4,7 +4,7 @@ import { AnimatedHepaLogo } from "@/components/brand";
 import { useAppTheme, useSiteContent } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import { scrollToSection } from "@/lib/scroll";
-import { isExternalHref, isHashHref, isInternalPathHref, normalizeAppHref } from "@/lib/site-pages";
+import { isExternalHref, isHashHref, isInternalPathHref, normalizeAppHref, resolveAppHref } from "@/lib/site-pages";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -114,6 +114,8 @@ const Navbar = () => {
   };
 
   const isLinkHandledInApp = (href: string) => isHashHref(href) || isInternalPathHref(href);
+  const getInAppNavigationHref = (href: string) =>
+    isHashHref(href) && location.pathname !== "/" ? resolveAppHref(`/${href}`) : resolveAppHref(href) || href;
 
   const renderNavigationLink = (href: string, label: string, className: string, closeMobileMenu = false) => {
     if (!isLinkHandledInApp(href) || isExternalHref(href)) {
@@ -126,7 +128,7 @@ const Navbar = () => {
 
     return (
       <a
-        href={isHashHref(href) && location.pathname !== "/" ? `/${href}` : normalizeAppHref(href) || href}
+        href={getInAppNavigationHref(href)}
         onClick={(event) => {
           event.preventDefault();
           handleNavigation(href, closeMobileMenu);
@@ -167,7 +169,7 @@ const Navbar = () => {
               <Button variant="hero" size="sm" asChild className={navCtaClassName}>
                 {isLinkHandledInApp(navigation.primaryCta.href) ? (
                   <a
-                    href={isHashHref(navigation.primaryCta.href) && location.pathname !== "/" ? `/${navigation.primaryCta.href}` : normalizeAppHref(navigation.primaryCta.href) || navigation.primaryCta.href}
+                    href={getInAppNavigationHref(navigation.primaryCta.href)}
                     onClick={(event) => {
                       event.preventDefault();
                       handleNavigation(navigation.primaryCta.href);
@@ -210,7 +212,7 @@ const Navbar = () => {
                 <Button variant="hero" asChild className="w-full">
                   {isLinkHandledInApp(navigation.primaryCta.href) ? (
                     <a
-                      href={isHashHref(navigation.primaryCta.href) && location.pathname !== "/" ? `/${navigation.primaryCta.href}` : normalizeAppHref(navigation.primaryCta.href) || navigation.primaryCta.href}
+                      href={getInAppNavigationHref(navigation.primaryCta.href)}
                       onClick={(event) => {
                         event.preventDefault();
                         handleNavigation(navigation.primaryCta.href, true);
