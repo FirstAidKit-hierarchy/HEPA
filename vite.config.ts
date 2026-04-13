@@ -20,7 +20,7 @@ const normalizeBasePath = (value: string) => {
 
 const resolvePagesBase = (mode: string) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const explicitBase = env.VITE_BASE_PATH?.trim();
+  const explicitBase = process.env.VITE_BASE_PATH?.trim() || env.VITE_BASE_PATH?.trim();
 
   if (explicitBase) {
     return normalizeBasePath(explicitBase);

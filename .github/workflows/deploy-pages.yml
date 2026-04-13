@@ -19,6 +19,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
+      VITE_BASE_PATH: /
       VITE_ADMIN_PATH: ${{ vars.VITE_ADMIN_PATH }}
       VITE_ADMIN_OWNER_EMAIL: ${{ vars.VITE_ADMIN_OWNER_EMAIL }}
       VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
