@@ -1,8 +1,15 @@
 import { CheckCircle2, Download } from "lucide-react";
+import { HEPA_PROFILE_DOWNLOAD_FILENAME, HEPA_PROFILE_DOWNLOAD_PATH } from "@/content/home";
 import { ActionButtons, Reveal } from "@/components/common";
 import { useSiteContent } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import PartnersSection from "@/components/sections/PartnersSection";
+import { resolveAppHref, withBasePath } from "@/lib/site-pages";
+
+const isLegacyHepaProfileHref = (value: string) =>
+  /hepa(?:[-%\s]+company)?[-%\s]+profile[-%\s]+2026/i.test(value) ||
+  /hepa%20company%20profile%202026/i.test(value) ||
+  /hepa-company-profile-2026/i.test(value);
 
 const HeroSection = () => {
   const {
@@ -10,6 +17,13 @@ const HeroSection = () => {
       home: { hero },
     },
   } = useSiteContent();
+  const rawDownloadHref = hero.downloadCta.href?.trim() ?? "";
+  const resolvedDownloadHref = !rawDownloadHref
+    ? withBasePath(HEPA_PROFILE_DOWNLOAD_PATH)
+    : isLegacyHepaProfileHref(rawDownloadHref)
+      ? withBasePath(HEPA_PROFILE_DOWNLOAD_PATH)
+      : resolveAppHref(rawDownloadHref);
+  const resolvedDownloadName = hero.downloadCta.download?.trim() || HEPA_PROFILE_DOWNLOAD_FILENAME;
 
   return (
     <section id="home" className="relative overflow-hidden pt-16">
@@ -22,9 +36,9 @@ const HeroSection = () => {
           `,
         }}
       />
-      <div className="absolute top-20 right-0 w-[500px] h-[500px] rounded-full bg-[#2B8ABF]/16 blur-3xl" />
-      <div className="absolute bottom-10 left-0 w-[300px] h-[300px] rounded-full bg-[#7ED957]/10 blur-3xl" />
-      <div className="absolute top-1/3 left-1/4 w-[200px] h-[200px] rounded-full bg-[#2B8ABF]/12 blur-3xl" />
+      <div className="absolute top-20 right-0 h-[500px] w-[500px] rounded-full bg-[#2B8ABF]/16 blur-3xl" />
+      <div className="absolute bottom-10 left-0 h-[300px] w-[300px] rounded-full bg-[#7ED957]/10 blur-3xl" />
+      <div className="absolute top-1/3 left-1/4 h-[200px] w-[200px] rounded-full bg-[#2B8ABF]/12 blur-3xl" />
       <div className="section-container relative z-10 py-16 pb-44 sm:py-20 sm:pb-48 lg:py-28 lg:pb-52">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-center lg:gap-12">
           <Reveal className="max-w-3xl">
@@ -33,7 +47,7 @@ const HeroSection = () => {
             </div>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-6xl">
               {hero.title.lead}
-              <span className="mt-3 block bg-gradient-to-r from-[#79D3FF] via-[#2B8ABF] to-[#65D1A7] bg-clip-text text-transparent">
+              <span className="mt-3 block bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-transparent">
                 {hero.title.highlight}
               </span>
             </h1>
@@ -45,7 +59,7 @@ const HeroSection = () => {
                 asChild
                 className="w-full border-white/35 bg-white/[0.03] text-white hover:border-white hover:bg-white hover:text-slate-950 sm:w-auto"
               >
-                <a href={hero.downloadCta.href} download={hero.downloadCta.download}>
+                <a href={resolvedDownloadHref} download={resolvedDownloadName}>
                   <Download size={18} />
                   {hero.downloadCta.label}
                 </a>

@@ -1,6 +1,9 @@
 import { withBasePath } from "@/lib/site-pages";
 import { sharedCtas } from "./cta";
 
+export const HEPA_PROFILE_DOWNLOAD_PATH = "/documents/hepa-company-profile-2026.pdf";
+export const HEPA_PROFILE_DOWNLOAD_FILENAME = "HEPA-Company-Profile-2026.pdf";
+
 export const heroContent = {
   badge: "Saudi Arabia and GCC market access and evidence support",
   title: {
@@ -10,18 +13,18 @@ export const heroContent = {
   primaryCta: sharedCtas.primary,
   downloadCta: {
     label: "Download HEPA Profile",
-    href: withBasePath("/documents/HEPA%20Company%20Profile%202026%20for%20Extrnal%20Use.pdf"),
-    download: "HEPA-Business-Profile-2026.pdf",
+    href: withBasePath(HEPA_PROFILE_DOWNLOAD_PATH),
+    download: HEPA_PROFILE_DOWNLOAD_FILENAME,
   },
   quickPoints: [
     "Local evidence generation",
-    "Pricing and access research",
+    "Pricing and Access research",
     "Stakeholder surveys and expert validation",
     "Decision-ready reports and dashboards",
   ],
   summaryCard: {
     eyebrow: "Who can use HEPA",
-    title: "From local data collection to decision-ready output",
+    title: "From Local Data Collection To Decision-Ready Output",
     items: [
       {
         label: "Teams served",
