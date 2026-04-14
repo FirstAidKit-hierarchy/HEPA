@@ -43,6 +43,22 @@ const buildRequestSnapshot = (status: "pending" | "approved" | "declined") => ({
   }),
 });
 
+const buildRequestSnapshotWithOwner = (status: "pending" | "approved" | "declined", ownerEmail: string) => ({
+  exists: () => true,
+  id: "uid-1",
+  data: () => ({
+    uid: "uid-1",
+    email: "requester@example.com",
+    displayName: "Requester",
+    status,
+    requestedAt: "2026-04-14T10:00:00.000Z",
+    reviewedAt: status === "pending" ? "" : "2026-04-14T11:00:00.000Z",
+    reviewedByUid: status === "pending" ? "" : "owner-1",
+    reviewedByEmail: status === "pending" ? "" : "owner@example.com",
+    ownerEmail,
+  }),
+});
+
 describe("submitAdminAccessRequest", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -152,4 +168,28 @@ describe("submitAdminAccessRequest", () => {
       });
     },
   );
+
+  it("reuses the stored owner email when resubmitting a reviewed request", async () => {
+    window.__HEPA_RUNTIME_CONFIG__ = {
+      VITE_ADMIN_OWNER_EMAIL: "",
+    };
+    firestoreMocks.getDoc.mockResolvedValue(buildRequestSnapshotWithOwner("declined", "saved-owner@example.com"));
+    firestoreMocks.setDoc.mockResolvedValue(undefined);
+    firestoreMocks.addDoc.mockResolvedValue(undefined);
+
+    const { submitAdminAccessRequest } = await import("@/lib/firebase/adminRequests");
+    const result = await submitAdminAccessRequest({
+      uid: "uid-1",
+      email: "Requester@Example.com",
+      displayName: "Requester",
+    } as never);
+
+    expect(result.request.ownerEmail).toBe("saved-owner@example.com");
+    expect(firestoreMocks.setDoc.mock.calls[0][1]).toMatchObject({
+      ownerEmail: "saved-owner@example.com",
+    });
+    expect(firestoreMocks.addDoc.mock.calls[0][1]).toMatchObject({
+      to: "saved-owner@example.com",
+    });
+  });
 });

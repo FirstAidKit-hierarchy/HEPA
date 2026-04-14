@@ -152,12 +152,15 @@ const normalizeAdminAccessRequest = (uid: string, value: unknown): AdminAccessRe
   };
 };
 
-const buildRequestDocument = (user: User) => {
+const buildRequestDocument = (user: User, existingRequest?: AdminAccessRequest | null) => {
   const requesterEmail = normalizeEmail(user.email);
 
   if (!requesterEmail) {
     throw new Error("This account does not have an email address.");
   }
+
+  const resolvedOwnerEmail = normalizeEmail(existingRequest?.ownerEmail) || ownerEmail;
+
   return {
     uid: user.uid,
     email: requesterEmail,
@@ -167,19 +170,21 @@ const buildRequestDocument = (user: User) => {
     reviewedAt: "",
     reviewedByUid: "",
     reviewedByEmail: "",
-    ownerEmail,
+    ownerEmail: resolvedOwnerEmail,
   };
 };
 
 const queueOwnerReviewEmail = async (request: AdminAccessRequest) => {
-  if (!ownerEmail) {
+  const reviewOwnerEmail = normalizeEmail(request.ownerEmail) || ownerEmail;
+
+  if (!reviewOwnerEmail) {
     return false;
   }
 
   const reviewUrl = getReviewUrl();
 
   return queueAdminAccessEmail({
-    to: ownerEmail,
+    to: reviewOwnerEmail,
     subject: `HEPA admin access request: ${request.email}`,
     textLines: [
       `${request.email} requested access to the HEPA admin editor.`,
@@ -345,32 +350,33 @@ export const submitAdminAccessRequest = async (user: User): Promise<AdminAccessR
   const requestRef = doc(firestore, ADMIN_REQUESTS_COLLECTION, user.uid);
   const snapshot = await getDoc(requestRef);
   let resubmittedReviewedRequest = false;
+  let existingRequest: AdminAccessRequest | null = null;
 
   if (snapshot.exists()) {
-    const existing = normalizeAdminAccessRequest(snapshot.id, snapshot.data());
+    existingRequest = normalizeAdminAccessRequest(snapshot.id, snapshot.data());
 
-    if (existing?.status === "pending") {
+    if (existingRequest?.status === "pending") {
       let emailQueued = false;
 
       try {
-        emailQueued = await queueOwnerReviewEmail(existing);
+        emailQueued = await queueOwnerReviewEmail(existingRequest);
       } catch (error) {
         console.error("Unable to queue the owner review email for the pending request.", error);
       }
 
       return {
-        request: existing,
+        request: existingRequest,
         emailQueued,
         reusedPendingRequest: true,
       };
     }
 
-    if (existing?.status === "approved" || existing?.status === "declined") {
+    if (existingRequest?.status === "approved" || existingRequest?.status === "declined") {
       resubmittedReviewedRequest = true;
     }
   }
 
-  const request = buildRequestDocument(user);
+  const request = buildRequestDocument(user, existingRequest);
   await setDoc(requestRef, request);
   const normalizedRequest = normalizeAdminAccessRequest(user.uid, request);
 
