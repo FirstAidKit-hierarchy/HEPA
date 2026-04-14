@@ -62,11 +62,13 @@ describe("submitAdminAccessRequest", () => {
     const { submitAdminAccessRequest } = await import("@/lib/firebase/adminRequests");
     const result = await submitAdminAccessRequest({
       uid: "uid-1",
-      email: "requester@example.com",
+      email: "Requester@Example.com",
       displayName: "Requester",
     } as never);
 
     expect(result.request.status).toBe("pending");
+    expect(result.request.email).toBe("requester@example.com");
+    expect(result.request.ownerEmail).toBe("owner@example.com");
     expect(result.emailQueued).toBe(true);
     expect(result.reusedPendingRequest).toBeUndefined();
     expect(result.resubmittedReviewedRequest).toBe(false);
@@ -113,11 +115,13 @@ describe("submitAdminAccessRequest", () => {
       const { submitAdminAccessRequest } = await import("@/lib/firebase/adminRequests");
       const result = await submitAdminAccessRequest({
         uid: "uid-1",
-        email: "requester@example.com",
+        email: "Requester@Example.com",
         displayName: "Requester",
       } as never);
 
       expect(result.request.status).toBe("pending");
+      expect(result.request.email).toBe("requester@example.com");
+      expect(result.request.ownerEmail).toBe("owner@example.com");
       expect(result.request.reviewedAt).toBe("");
       expect(result.request.reviewedByUid).toBe("");
       expect(result.request.reviewedByEmail).toBe("");

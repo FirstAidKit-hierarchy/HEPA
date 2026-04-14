@@ -41,6 +41,7 @@ const adminUsersCollectionRef = firestore ? collection(firestore, ADMIN_USERS_CO
 const adminEmailCollectionRef = firestore ? collection(firestore, ADMIN_EMAIL_COLLECTION) : null;
 
 const normalizeEnvValue = (value: string | undefined) => value?.trim() ?? "";
+const normalizeEmail = (value: string | undefined) => normalizeEnvValue(value).toLowerCase();
 const readEnvValue = (key: keyof HepaRuntimeEnv) => {
   const runtimeValue = typeof window !== "undefined" ? window.__HEPA_RUNTIME_CONFIG__?.[key] : undefined;
   const buildValue = import.meta.env[key];
@@ -48,7 +49,7 @@ const readEnvValue = (key: keyof HepaRuntimeEnv) => {
   return normalizeEnvValue(runtimeValue || buildValue);
 };
 
-const ownerEmail = readEnvValue("VITE_ADMIN_OWNER_EMAIL");
+const ownerEmail = normalizeEmail(readEnvValue("VITE_ADMIN_OWNER_EMAIL"));
 
 const normalizeString = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 
@@ -75,7 +76,7 @@ const queueAdminAccessEmail = async ({
   notificationType: "admin-access-request-submitted" | "admin-access-request-reviewed";
   relatedRequestUid: string;
 }) => {
-  const recipient = normalizeString(to);
+  const recipient = normalizeString(to).toLowerCase();
 
   if (!adminEmailCollectionRef || !recipient) {
     return false;
@@ -152,7 +153,7 @@ const normalizeAdminAccessRequest = (uid: string, value: unknown): AdminAccessRe
 };
 
 const buildRequestDocument = (user: User) => {
-  const requesterEmail = user.email?.trim();
+  const requesterEmail = normalizeEmail(user.email);
 
   if (!requesterEmail) {
     throw new Error("This account does not have an email address.");
