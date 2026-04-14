@@ -523,11 +523,23 @@ const AdminPage = () => {
       const result = await submitAdminAccessRequest(user);
       setCurrentAccessRequest(result.request);
       toast.success(
-        result.emailQueued
-          ? "Access request saved and emailed to the owner."
-          : adminRequestOwnerEmail
-            ? "Access request saved to the review queue. Check the Trigger Email setup if no email arrives."
-            : "Access request saved to the review queue.",
+        result.reusedPendingRequest
+          ? result.emailQueued
+            ? "Pending access request kept in the review queue and the owner email was queued again."
+            : adminRequestOwnerEmail
+              ? "Pending access request is still in the review queue. Check the Trigger Email setup if no email arrives."
+              : "Pending access request is still in the review queue."
+          : result.resubmittedReviewedRequest
+            ? result.emailQueued
+              ? "Access request submitted again and the owner email was queued."
+              : adminRequestOwnerEmail
+                ? "Access request submitted again. Check the Trigger Email setup if no email arrives."
+                : "Access request submitted again and returned to the review queue."
+          : result.emailQueued
+            ? "Access request saved and the owner email was queued."
+            : adminRequestOwnerEmail
+              ? "Access request saved to the review queue. Check the Trigger Email setup if no email arrives."
+              : "Access request saved to the review queue.",
       );
     } catch (error) {
       console.error("Unable to submit the access request.", error);
@@ -896,13 +908,13 @@ const AdminPage = () => {
           ) : null}
           {currentAccessRequest.reviewedByEmail ? (
             <p className="mt-1">
-              Reviewed by: <span className="text-white">{currentAccessRequest.reviewedByEmail}</span>
+              Reviewed by: <span className="text-white">{maskEmailAddress(currentAccessRequest.reviewedByEmail)}</span>
             </p>
           ) : null}
           <p className="mt-3">
             {currentAccessRequest.status === "pending"
               ? adminRequestOwnerEmail
-                ? "The owner review queue has been updated. An owner can approve or decline this request from the admin page."
+                ? "The owner review queue has been updated. If the owner did not get an email, use the resend action below to queue it again."
                 : "The owner review queue has been updated. Configure the owner email and Trigger Email extension to send notifications automatically."
               : currentAccessRequest.status === "approved"
                 ? "Approval was recorded. If the editor does not unlock within a few seconds, reload this page."
@@ -920,11 +932,15 @@ const AdminPage = () => {
           variant="hero"
           size="sm"
           onClick={handleRequestAccess}
-          disabled={isSubmittingAccessRequest || currentAccessRequest?.status === "pending"}
+          disabled={isSubmittingAccessRequest}
           className="rounded-full"
         >
           {isSubmittingAccessRequest ? <Loader2 className="animate-spin" size={16} /> : <Mail size={16} />}
-          {currentAccessRequest?.status === "declined" ? "Request access again" : "Request access"}
+          {currentAccessRequest?.status === "pending"
+            ? "Resend request email"
+            : currentAccessRequest?.status === "declined"
+              ? "Request access again"
+              : "Request access"}
         </Button>
         <Button
           variant="outline"

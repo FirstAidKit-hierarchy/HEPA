@@ -31,7 +31,7 @@ export const setManagedAdminPassword = async (targetUid: string, newPassword: st
 
     if (looksLikeHtml) {
       throw new Error(
-        "The password override API is not available here. If you are on local Vite dev, use a deployed server route or `vercel dev`. If you are deployed, fix the hosting rewrite so `/api/admin-passwords` does not redirect to `index.html`.",
+        "The password override API is not available here. On GitHub Pages, including hepa.sa, this feature needs a separate backend-capable deployment. For local development, use a deployed server route or `vercel dev`.",
       );
     }
   }

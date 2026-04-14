@@ -6,7 +6,7 @@ This project now supports a secure administration flow for the site-wide content
 
 Create `.env.local` in the project root for local development and copy the keys from `.env.example`.
 
-If you deploy the site, add the same Firebase values to your hosting provider before building or redeploying. Local Vite development still reads the `VITE_*` variables directly, and deployed builds can now also read them at runtime from the `/api/firebase-config` route on Vercel. If production is missing the values entirely, the app will still show `Firebase is not configured yet.`.
+For the live site on GitHub Pages at `https://hepa.sa`, set the Firebase values in the GitHub Pages workflow environment before building or redeploying. Local Vite development still reads the `VITE_*` variables directly from `.env.local`. The `/api/firebase-config` route is only an optional fallback for separate backend-capable hosts and is not part of the GitHub Pages production path.
 
 ```env
 VITE_ADMIN_PATH=/admin
@@ -28,9 +28,9 @@ For this project, the core Firebase values are `VITE_FIREBASE_API_KEY`, `VITE_FI
 
 `VITE_ADMIN_PATH` controls the fixed admin route at build time. Set it to a non-public path you want to use for the editor, then rebuild or redeploy the site.
 
-If you are deploying on Vercel and already stored these values as `NEXT_PUBLIC_FIREBASE_*`, the runtime config route also accepts those names as a fallback. Local development should still keep using the `VITE_*` names from `.env.local`.
+If you also maintain a separate backend-capable deployment, the optional runtime config route accepts `NEXT_PUBLIC_FIREBASE_*` names as a fallback there. The GitHub Pages production build should still use the `VITE_*` names from the GitHub Actions workflow.
 
-The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY` so the `/api/admin-passwords` route can update Firebase Auth users securely. Add those values in your hosting provider too, not only in local development.
+The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY` so the `/api/admin-passwords` route can update Firebase Auth users securely. That route is not available on GitHub Pages, so this feature only works on a separate backend-capable host or local development.
 
 For repeatable setup, you can keep a local server-only service-account file at `firebase-service-account.local.json` and run:
 
@@ -38,7 +38,7 @@ For repeatable setup, you can keep a local server-only service-account file at `
 npm run sync:firebase-admin
 ```
 
-The script reads `.env.local` plus `firebase-service-account.local.json` and upserts the required Firebase values into the linked Vercel project. The example shape is in `firebase-service-account.local.example.json`. Do not commit the real `.local.json` file.
+The script reads `.env.local` plus `firebase-service-account.local.json` and upserts the required Firebase values into the linked Vercel project. This is optional and only relevant if you are maintaining a separate backend-capable deployment in addition to GitHub Pages. The example shape is in `firebase-service-account.local.example.json`. Do not commit the real `.local.json` file.
 
 ## 2. Enable authentication providers
 
@@ -79,7 +79,7 @@ The admin page now writes email jobs into the `mail` collection when:
 - an owner approves a request
 - an owner declines a request
 
-This is the recommended email path for GitHub Pages because `/api/*` routes do not run there.
+This is the required production email path for GitHub Pages because `/api/*` routes do not run there.
 
 ## 6. Add owner and admin documents
 
@@ -199,10 +199,12 @@ After setup:
 2. If the user is not approved yet, they can click `Request access`.
 3. The app creates or refreshes `adminRequests/{uid}` with `status: "pending"`.
 4. The app also creates a new email job in `mail` for the owner.
-5. The owner opens the admin page, reviews the pending queue, and approves or declines the request.
-6. Approval creates or updates `adminUsers/{uid}` with the correct `email` and `role`.
-7. Approval or decline also creates a new email job in `mail` for the requester.
-8. The requester can then sign in on the admin route and the editor unlocks automatically.
+5. If the request is already pending, the app keeps the same `adminRequests/{uid}` record and can queue the owner notification again.
+6. The owner opens the admin page, reviews the pending queue, and approves or declines the request.
+7. Approval creates or updates `adminUsers/{uid}` with the correct `email` and `role`.
+8. Approval or decline also creates a new email job in `mail` for the requester.
+9. If a reviewed request needs to be sent again, the requester can submit again and the same record returns to `pending`.
+10. The requester can then sign in on the admin route and the editor unlocks automatically.
 
 You can still manually create `adminUsers/{uid}` if you want to bypass the request flow for a trusted account.
 
@@ -214,4 +216,4 @@ The admin panel now includes a `Password overrides` section.
 2. Only accounts with the `owner` role can use it.
 3. The owner can set a new password for any approved admin or owner account without knowing that user's current password.
 
-This feature depends on the `/api/admin-passwords` server route, so it works only where that API route and the server-side Firebase admin env vars are deployed.
+This feature depends on the `/api/admin-passwords` server route, so it does not work on the static GitHub Pages site at `hepa.sa`. It works only where that API route and the server-side Firebase admin env vars are deployed.

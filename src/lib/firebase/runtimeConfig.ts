@@ -12,9 +12,15 @@ type RuntimeConfigPayload = {
 const normalizeEnvValue = (value: string | undefined) => value?.trim() ?? "";
 
 const looksLikeHtmlDocument = (value: string) => /<!doctype html|<html/i.test(value);
+const hasStaticBuildFirebaseConfig = () =>
+  [import.meta.env.VITE_FIREBASE_API_KEY, import.meta.env.VITE_FIREBASE_PROJECT_ID, import.meta.env.VITE_FIREBASE_APP_ID].every(
+    (value) => normalizeEnvValue(value).length > 0,
+  );
 
 export const bootstrapFirebaseRuntimeConfig = async () => {
-  if (typeof window === "undefined" || window.__HEPA_RUNTIME_CONFIG__) {
+  // GitHub Pages builds should rely on the baked VITE_* values from the workflow.
+  // The /api/firebase-config route is only an optional fallback for backend-capable hosts.
+  if (typeof window === "undefined" || window.__HEPA_RUNTIME_CONFIG__ || hasStaticBuildFirebaseConfig()) {
     return;
   }
 

@@ -29,6 +29,8 @@ export type AdminUserRecord = {
 export type AdminAccessRequestMutationResult = {
   request: AdminAccessRequest;
   emailQueued: boolean;
+  reusedPendingRequest?: boolean;
+  resubmittedReviewedRequest?: boolean;
 };
 
 const ADMIN_REQUESTS_COLLECTION = "adminRequests";
@@ -341,15 +343,29 @@ export const submitAdminAccessRequest = async (user: User): Promise<AdminAccessR
 
   const requestRef = doc(firestore, ADMIN_REQUESTS_COLLECTION, user.uid);
   const snapshot = await getDoc(requestRef);
+  let resubmittedReviewedRequest = false;
 
   if (snapshot.exists()) {
     const existing = normalizeAdminAccessRequest(snapshot.id, snapshot.data());
 
     if (existing?.status === "pending") {
+      let emailQueued = false;
+
+      try {
+        emailQueued = await queueOwnerReviewEmail(existing);
+      } catch (error) {
+        console.error("Unable to queue the owner review email for the pending request.", error);
+      }
+
       return {
         request: existing,
-        emailQueued: false,
+        emailQueued,
+        reusedPendingRequest: true,
       };
+    }
+
+    if (existing?.status === "approved" || existing?.status === "declined") {
+      resubmittedReviewedRequest = true;
     }
   }
 
@@ -372,6 +388,7 @@ export const submitAdminAccessRequest = async (user: User): Promise<AdminAccessR
   return {
     request: normalizedRequest,
     emailQueued,
+    resubmittedReviewedRequest,
   };
 };
 
