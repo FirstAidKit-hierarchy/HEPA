@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Mail, MapPin, Send } from "lucide-react";
 import { Reveal, SectionHeading } from "@/components/common";
 import { useSiteContent } from "@/components/providers";
@@ -8,8 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  clearContactFormDraft,
+  emptyContactFormValues,
+  getContactFormEmailApiUrl,
+  isValidEmailAddress,
+  loadContactFormDraft,
+  saveContactFormDraft,
+  type ContactFormValues,
+} from "@/lib/contact-form";
 
 type FormErrors = Partial<Record<"firstName" | "lastName" | "email", string>>;
+type SubmitState = "idle" | "sending" | "sent" | "failed";
 
 const baseFieldClassName =
   "border-white/12 bg-white/10 text-white placeholder:text-slate-300/65 focus:border-accent-blue/40 focus-visible:ring-accent-blue/30";
@@ -23,9 +33,17 @@ const ContactSection = () => {
       siteShell: { navigation },
     },
   } = useSiteContent();
-  const [loading, setLoading] = useState(false);
+  const [formValues, setFormValues] = useState<ContactFormValues>(emptyContactFormValues);
+  const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errors, setErrors] = useState<FormErrors>({});
-  const [selectedService, setSelectedService] = useState("");
+
+  useEffect(() => {
+    const savedDraft = loadContactFormDraft();
+
+    if (Object.values(savedDraft).some(Boolean)) {
+      setFormValues(savedDraft);
+    }
+  }, []);
 
   const validateField = (name: keyof FormErrors, value: string) => {
     const trimmed = value.trim();
@@ -39,7 +57,7 @@ const ContactSection = () => {
         return "Email is required.";
       }
 
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      if (!isValidEmailAddress(trimmed)) {
         return "Please enter a valid email address.";
       }
     }
@@ -47,12 +65,11 @@ const ContactSection = () => {
     return "";
   };
 
-  const validateForm = (form: HTMLFormElement) => {
-    const formData = new FormData(form);
+  const validateForm = (values: ContactFormValues) => {
     const nextErrors: FormErrors = {
-      firstName: validateField("firstName", String(formData.get("firstName") ?? "")),
-      lastName: validateField("lastName", String(formData.get("lastName") ?? "")),
-      email: validateField("email", String(formData.get("email") ?? "")),
+      firstName: validateField("firstName", values.firstName),
+      lastName: validateField("lastName", values.lastName),
+      email: validateField("email", values.email),
     };
 
     setErrors(nextErrors);
@@ -60,6 +77,11 @@ const ContactSection = () => {
   };
 
   const handleFieldChange = (name: keyof FormErrors, value: string) => {
+    if (submitState !== "idle") {
+      setSubmitState("idle");
+    }
+
+    setFormValues((current) => ({ ...current, [name]: value }));
     setErrors((current) => {
       if (!current[name]) {
         return current;
@@ -69,25 +91,79 @@ const ContactSection = () => {
     });
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = event.currentTarget;
+  const handleValueChange = (name: keyof ContactFormValues, value: string) => {
+    if (submitState !== "idle") {
+      setSubmitState("idle");
+    }
 
-    if (!validateForm(form)) {
+    setFormValues((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!validateForm(formValues)) {
       return;
     }
 
-    setLoading(true);
-    window.setTimeout(() => {
-      setLoading(false);
+    const requestEmailApiUrl = getContactFormEmailApiUrl();
+    const recipientEmail = contact.submissionRecipientEmail.trim().toLowerCase();
+    const selectedServiceLabel = contact.serviceOptions.find((option) => option.value === formValues.service)?.label ?? formValues.service;
+
+    if (!requestEmailApiUrl || !isValidEmailAddress(recipientEmail)) {
+      console.error("Contact form email delivery is not configured correctly.", {
+        hasApiUrl: Boolean(requestEmailApiUrl),
+        recipientEmail,
+      });
+      saveContactFormDraft(formValues);
+      setSubmitState("failed");
+      toast({
+        variant: "destructive",
+        title: contact.errorMessage.title,
+        description: contact.errorMessage.description,
+      });
+      return;
+    }
+
+    try {
+      setSubmitState("sending");
+
+      const response = await fetch(`${requestEmailApiUrl}/send-contact-form-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formValues,
+          service: selectedServiceLabel,
+          recipientEmail,
+          pageUrl: typeof window === "undefined" ? "/contact" : window.location.href,
+        }),
+      });
+      const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+
+      if (!response.ok || !payload?.ok) {
+        throw new Error(payload?.error || `Contact form request failed (${response.status}).`);
+      }
+
+      clearContactFormDraft();
+      setFormValues(emptyContactFormValues);
+      setErrors({});
+      setSubmitState("sent");
       toast({
         title: contact.successMessage.title,
         description: contact.successMessage.description,
       });
-      form.reset();
-      setSelectedService("");
-      setErrors({});
-    }, 1000);
+    } catch (error) {
+      console.error("Unable to send the contact request.", error);
+      saveContactFormDraft(formValues);
+      setSubmitState("failed");
+      toast({
+        variant: "destructive",
+        title: contact.errorMessage.title,
+        description: contact.errorMessage.description,
+      });
+    }
   };
 
   return (
@@ -166,6 +242,7 @@ const ContactSection = () => {
                     <Input
                       id="contact-first-name"
                       name="firstName"
+                      value={formValues.firstName}
                       placeholder="First Name"
                       required
                       aria-invalid={!!errors.firstName}
@@ -187,6 +264,7 @@ const ContactSection = () => {
                     <Input
                       id="contact-last-name"
                       name="lastName"
+                      value={formValues.lastName}
                       placeholder="Last Name"
                       required
                       aria-invalid={!!errors.lastName}
@@ -206,7 +284,14 @@ const ContactSection = () => {
                   <Label htmlFor="contact-company" className={fieldLabelClassName}>
                     Company
                   </Label>
-                  <Input id="contact-company" name="company" placeholder="Company" className={baseFieldClassName} />
+                  <Input
+                    id="contact-company"
+                    name="company"
+                    value={formValues.company}
+                    onChange={(event) => handleValueChange("company", event.target.value)}
+                    placeholder="Company"
+                    className={baseFieldClassName}
+                  />
                 </div>
 
                 <div>
@@ -217,6 +302,7 @@ const ContactSection = () => {
                     id="contact-email"
                     name="email"
                     type="email"
+                    value={formValues.email}
                     placeholder="Email"
                     required
                     aria-invalid={!!errors.email}
@@ -239,12 +325,20 @@ const ContactSection = () => {
                   <Label htmlFor="contact-phone" className={fieldLabelClassName}>
                     Phone Number
                   </Label>
-                  <Input id="contact-phone" name="phone" type="tel" placeholder="Phone Number" className={baseFieldClassName} />
+                  <Input
+                    id="contact-phone"
+                    name="phone"
+                    type="tel"
+                    value={formValues.phone}
+                    onChange={(event) => handleValueChange("phone", event.target.value)}
+                    placeholder="Phone Number"
+                    className={baseFieldClassName}
+                  />
                 </div>
 
                 <div>
                   <Label className={fieldLabelClassName}>Project Need</Label>
-                  <Select value={selectedService} onValueChange={setSelectedService}>
+                  <Select value={formValues.service} onValueChange={(value) => handleValueChange("service", value)}>
                     <SelectTrigger className={baseFieldClassName}>
                       <SelectValue placeholder="Select a service or request type" />
                     </SelectTrigger>
@@ -256,7 +350,6 @@ const ContactSection = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <input type="hidden" name="service" value={selectedService} />
                 </div>
 
                 <div>
@@ -267,13 +360,15 @@ const ContactSection = () => {
                     id="contact-message"
                     name="message"
                     rows={5}
+                    value={formValues.message}
+                    onChange={(event) => handleValueChange("message", event.target.value)}
                     placeholder="Tell us about the team, market, decision, and deliverable you need."
                     className={baseFieldClassName}
                   />
                 </div>
 
-                <Button variant="hero" className="w-full" disabled={loading}>
-                  {loading ? (
+                <Button variant="hero" className="w-full" disabled={submitState === "sending"}>
+                  {submitState === "sending" ? (
                     "Sending request..."
                   ) : (
                     <>

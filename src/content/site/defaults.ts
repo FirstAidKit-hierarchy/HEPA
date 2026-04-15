@@ -345,7 +345,9 @@ const baseSiteContent = {
       engagementPrompts: [...contactContent.engagementPrompts],
       serviceOptions: contactContent.serviceOptions.map((option) => ({ ...option })),
       supportNote: contactContent.supportNote,
+      submissionRecipientEmail: contactContent.submissionRecipientEmail,
       successMessage: { ...contactContent.successMessage },
+      errorMessage: { ...contactContent.errorMessage },
       briefChecklist: contactBriefChecklist,
       formIntro: {
         eyebrow: "Request a conversation",

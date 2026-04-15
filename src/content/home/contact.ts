@@ -28,8 +28,13 @@ export const contactContent = {
   ],
   supportNote:
     "Include the audience, market, and delivery format you need so the HEPA team can route your request correctly.",
+  submissionRecipientEmail: "info@digitalhepa.com",
   successMessage: {
     title: "Thanks. Your request has been captured.",
     description: "A HEPA team member can now review the brief and follow up with the next step.",
+  },
+  errorMessage: {
+    title: "We could not send your request.",
+    description: "Please try again in a moment. We kept your details so you can resend without starting over.",
   },
 };
