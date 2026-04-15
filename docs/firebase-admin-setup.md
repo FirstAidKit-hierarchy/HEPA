@@ -10,6 +10,7 @@ For the live site on GitHub Pages at `https://hepa.sa`, set the Firebase values 
 
 ```env
 VITE_ADMIN_PATH=/admin
+VITE_ADMIN_REQUEST_EMAIL_API_URL=https://api.hepa.sa
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
@@ -64,24 +65,41 @@ If you want admins to use the `Continue with Google` button on the admin page:
 2. Enable `Google`.
 3. Add every deployment hostname under `Authentication -> Settings -> Authorized domains`.
 
-## 5. Install the Trigger Email extension
+## 5. Optional: direct owner request emails with Cloudflare Worker + Resend
 
-For real request and approval emails on GitHub Pages, use the Firebase `Trigger Email` extension (`firestore-send-email`).
+If you want signed-in users to notify the owner without the Firebase `Trigger Email` extension, point the site at the Worker endpoint:
+
+```env
+VITE_ADMIN_REQUEST_EMAIL_API_URL=https://api.hepa.sa
+```
+
+When this value is set, the `Request access` and `Resend request email` actions send the owner notification directly to `POST /send-admin-request-email` on that Worker instead of writing a Firestore `mail` document.
+
+The current Worker contract expects:
+
+- `POST /send-admin-request-email`
+- JSON body with `requesterEmail`, `displayName`, and `reviewUrl`
+- CORS allowed from `https://hepa.sa`
+
+The `adminRequests/{uid}` Firestore record is still created and updated exactly the same way. Only the owner-notification transport changes.
+
+## 6. Optional: install the Trigger Email extension
+
+Use the Firebase `Trigger Email` extension (`firestore-send-email`) if you want Firestore-driven approval and decline emails, or if you are not using the direct Worker endpoint above.
 
 1. Open `Extensions`.
 2. Install `Trigger Email`.
 3. Point it at the Firestore collection `mail`.
 4. Configure your SMTP provider or supported email transport during installation.
 
-The admin page now writes email jobs into the `mail` collection when:
+The admin page writes email jobs into the `mail` collection when:
 
-- a signed-in user clicks `Request access`
 - an owner approves a request
 - an owner declines a request
 
-This is the required production email path for GitHub Pages because `/api/*` routes do not run there.
+If `VITE_ADMIN_REQUEST_EMAIL_API_URL` is not configured, `Request access` also writes the owner notification into `mail`.
 
-## 6. Add owner and admin documents
+## 7. Add owner and admin documents
 
 Create one document for each admin in the `adminUsers` collection.
 
@@ -99,7 +117,7 @@ Use `role: "owner"` for the primary owner account and `role: "admin"` for regula
 
 If a signed-in user does not have a matching `adminUsers/{uid}` document, they can authenticate but they still cannot edit content.
 
-## 7. Apply Firestore rules
+## 8. Apply Firestore rules
 
 Use rules like these so:
 
@@ -107,7 +125,7 @@ Use rules like these so:
 - only owners can manage approved admin access
 - signed-in users can create their own pending request
 - owners can review requests
-- the `mail` collection can only be used for the two request-notification flows above
+- the `mail` collection can only be used for review-result emails, and for owner notifications when you are not using the direct Worker endpoint
 
 Replace `owner@yourdomain.com` with the owner address, for example `ahuttami@digitalhepa.com`.
 
@@ -182,7 +200,9 @@ service cloud.firestore {
 }
 ```
 
-## 8. Content document
+If you always use `VITE_ADMIN_REQUEST_EMAIL_API_URL`, the first branch under `match /mail/{mailId}` is optional because request-submitted notifications no longer go through Firestore.
+
+## 9. Content document
 
 The editor saves to:
 
@@ -191,15 +211,15 @@ The editor saves to:
 
 You do not need to create this document manually. The admin editor will create it on the first save.
 
-## 9. Admin access flow
+## 10. Admin access flow
 
 After setup:
 
 1. The user signs in on the admin route.
 2. If the user is not approved yet, they can click `Request access`.
 3. The app creates or refreshes `adminRequests/{uid}` with `status: "pending"`.
-4. The app also creates a new email job in `mail` for the owner.
-5. If the request is already pending, the app keeps the same `adminRequests/{uid}` record and can queue the owner notification again.
+4. If `VITE_ADMIN_REQUEST_EMAIL_API_URL` is set, the app sends the owner notification directly to that endpoint. Otherwise it creates a new email job in `mail` for the owner.
+5. If the request is already pending, the app keeps the same `adminRequests/{uid}` record and can send or queue the owner notification again.
 6. The owner opens the admin page, reviews the pending queue, and approves or declines the request.
 7. Approval creates or updates `adminUsers/{uid}` with the correct `email` and `role`.
 8. Approval or decline also creates a new email job in `mail` for the requester.
@@ -208,7 +228,7 @@ After setup:
 
 You can still manually create `adminUsers/{uid}` if you want to bypass the request flow for a trusted account.
 
-## 10. Owner password overrides
+## 11. Owner password overrides
 
 The admin panel now includes a `Password overrides` section.
 

@@ -6,6 +6,7 @@ type RuntimeConfigPayload = {
   storageBucket?: string;
   messagingSenderId?: string;
   measurementId?: string;
+  adminRequestEmailApiUrl?: string;
   ownerEmail?: string;
 };
 
@@ -58,6 +59,7 @@ export const bootstrapFirebaseRuntimeConfig = async () => {
       VITE_FIREBASE_MESSAGING_SENDER_ID: normalizeEnvValue(payload.messagingSenderId) || undefined,
       VITE_FIREBASE_APP_ID: normalizeEnvValue(payload.appId),
       VITE_FIREBASE_MEASUREMENT_ID: normalizeEnvValue(payload.measurementId) || undefined,
+      VITE_ADMIN_REQUEST_EMAIL_API_URL: normalizeEnvValue(payload.adminRequestEmailApiUrl) || undefined,
       VITE_ADMIN_OWNER_EMAIL: normalizeEnvValue(payload.ownerEmail) || undefined,
     };
 

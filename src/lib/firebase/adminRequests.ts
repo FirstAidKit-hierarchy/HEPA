@@ -33,6 +33,8 @@ export type AdminAccessRequestMutationResult = {
   resubmittedReviewedRequest?: boolean;
 };
 
+export type AdminRequestOwnerNotificationTransport = "api" | "firestore" | "disabled";
+
 const ADMIN_REQUESTS_COLLECTION = "adminRequests";
 const ADMIN_USERS_COLLECTION = "adminUsers";
 const ADMIN_EMAIL_COLLECTION = "mail";
@@ -49,6 +51,7 @@ const readEnvValue = (key: keyof HepaRuntimeEnv) => {
   return normalizeEnvValue(runtimeValue || buildValue);
 };
 
+const ownerRequestEmailApiUrl = readEnvValue("VITE_ADMIN_REQUEST_EMAIL_API_URL").replace(/\/+$/, "");
 const ownerEmail = normalizeEmail(readEnvValue("VITE_ADMIN_OWNER_EMAIL"));
 
 const normalizeString = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -93,6 +96,31 @@ const queueAdminAccessEmail = async ({
       html: htmlLines.filter(Boolean).join(""),
     },
   });
+
+  return true;
+};
+
+const sendOwnerReviewEmailThroughApi = async (request: AdminAccessRequest) => {
+  if (!ownerRequestEmailApiUrl) {
+    return false;
+  }
+
+  const response = await fetch(`${ownerRequestEmailApiUrl}/send-admin-request-email`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      requesterEmail: request.email,
+      displayName: request.displayName,
+      reviewUrl: getReviewUrl(),
+    }),
+  });
+  const payload = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+
+  if (!response.ok || !payload?.ok) {
+    throw new Error(payload?.error || `Owner notification request failed (${response.status}).`);
+  }
 
   return true;
 };
@@ -177,8 +205,12 @@ const buildRequestDocument = (user: User, existingRequest?: AdminAccessRequest |
 const queueOwnerReviewEmail = async (request: AdminAccessRequest) => {
   const reviewOwnerEmail = normalizeEmail(request.ownerEmail) || ownerEmail;
 
-  if (!reviewOwnerEmail) {
+  if (!reviewOwnerEmail && !ownerRequestEmailApiUrl) {
     return false;
+  }
+
+  if (ownerRequestEmailApiUrl) {
+    return sendOwnerReviewEmailThroughApi(request);
   }
 
   const reviewUrl = getReviewUrl();
@@ -230,6 +262,11 @@ const queueRequesterReviewEmail = async (
 
 export const isAdminRequestConfigured = Boolean(firestore);
 export const adminRequestOwnerEmail = ownerEmail;
+export const adminRequestOwnerNotificationTransport: AdminRequestOwnerNotificationTransport = ownerRequestEmailApiUrl
+  ? "api"
+  : adminEmailCollectionRef
+    ? "firestore"
+    : "disabled";
 export const isOwnerEmail = (email: string | null | undefined) =>
   Boolean(ownerEmail) && typeof email === "string" && email.trim().toLowerCase() === ownerEmail.toLowerCase();
 export const isOwnerUser = (user: Pick<User, "email"> | null | undefined) => isOwnerEmail(user?.email);

@@ -37,6 +37,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/sonner";
 import {
   adminRequestOwnerEmail,
+  adminRequestOwnerNotificationTransport,
   approveAdminAccessRequest,
   declineAdminAccessRequest,
   revokeAdminAccess,
@@ -75,6 +76,9 @@ function upsertMeta(name: string) {
 
   return element;
 }
+
+const usesDirectOwnerRequestNotifications = adminRequestOwnerNotificationTransport === "api";
+const usesFirestoreOwnerRequestNotifications = adminRequestOwnerNotificationTransport === "firestore";
 
 const sectionConfig = [
   {
@@ -525,20 +529,32 @@ const AdminPage = () => {
       toast.success(
         result.reusedPendingRequest
           ? result.emailQueued
-            ? "Pending access request kept in the review queue and the owner email was queued again."
+            ? usesDirectOwnerRequestNotifications
+              ? "Pending access request kept in the review queue and the owner notification was sent again."
+              : "Pending access request kept in the review queue and the owner email was queued again."
             : adminRequestOwnerEmail
-              ? "Pending access request is still in the review queue. Check the Trigger Email setup if no email arrives."
+              ? usesDirectOwnerRequestNotifications
+                ? "Pending access request is still in the review queue. Check the request email service if no email arrives."
+                : "Pending access request is still in the review queue. Check the Trigger Email setup if no email arrives."
               : "Pending access request is still in the review queue."
           : result.resubmittedReviewedRequest
             ? result.emailQueued
-              ? "Access request submitted again and the owner email was queued."
+              ? usesDirectOwnerRequestNotifications
+                ? "Access request submitted again and the owner notification was sent."
+                : "Access request submitted again and the owner email was queued."
               : adminRequestOwnerEmail
-                ? "Access request submitted again. Check the Trigger Email setup if no email arrives."
+                ? usesDirectOwnerRequestNotifications
+                  ? "Access request submitted again. Check the request email service if no email arrives."
+                  : "Access request submitted again. Check the Trigger Email setup if no email arrives."
                 : "Access request submitted again and returned to the review queue."
           : result.emailQueued
-            ? "Access request saved and the owner email was queued."
+            ? usesDirectOwnerRequestNotifications
+              ? "Access request saved and the owner notification was sent."
+              : "Access request saved and the owner email was queued."
             : adminRequestOwnerEmail
-              ? "Access request saved to the review queue. Check the Trigger Email setup if no email arrives."
+              ? usesDirectOwnerRequestNotifications
+                ? "Access request saved to the review queue. Check the request email service if no email arrives."
+                : "Access request saved to the review queue. Check the Trigger Email setup if no email arrives."
               : "Access request saved to the review queue.",
       );
     } catch (error) {
@@ -914,8 +930,14 @@ const AdminPage = () => {
           <p className="mt-3">
             {currentAccessRequest.status === "pending"
               ? adminRequestOwnerEmail
-                ? "The owner review queue has been updated. If the owner did not get an email, use the resend action below to queue it again."
-                : "The owner review queue has been updated. Configure the owner email and Trigger Email extension to send notifications automatically."
+                ? usesDirectOwnerRequestNotifications
+                  ? "The owner review queue has been updated. If the owner did not get the email, use the resend action below to send it again."
+                  : usesFirestoreOwnerRequestNotifications
+                    ? "The owner review queue has been updated. If the owner did not get an email, use the resend action below to queue it again."
+                    : "The owner review queue has been updated."
+                : usesDirectOwnerRequestNotifications
+                  ? "The owner review queue has been updated. Configure the owner email and request email service to send notifications automatically."
+                  : "The owner review queue has been updated. Configure the owner email and Trigger Email extension to send notifications automatically."
               : currentAccessRequest.status === "approved"
                 ? "Approval was recorded. If the editor does not unlock within a few seconds, reload this page."
                 : "This request was declined. You can send a new request after reviewing the account details below."}

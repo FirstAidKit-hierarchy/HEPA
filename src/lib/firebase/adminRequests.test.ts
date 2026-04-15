@@ -17,6 +17,8 @@ const firestoreMocks = vi.hoisted(() => {
   };
 });
 
+const fetchMock = vi.fn();
+
 vi.mock("@/lib/firebase/client", () => ({
   firestore: { kind: "firestore" },
 }));
@@ -63,6 +65,8 @@ describe("submitAdminAccessRequest", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
     window.__HEPA_RUNTIME_CONFIG__ = {
       VITE_ADMIN_OWNER_EMAIL: "owner@example.com",
     };
@@ -190,6 +194,47 @@ describe("submitAdminAccessRequest", () => {
     });
     expect(firestoreMocks.addDoc.mock.calls[0][1]).toMatchObject({
       to: "saved-owner@example.com",
+    });
+  });
+
+  it("sends the owner notification through the configured request email API instead of Firestore mail", async () => {
+    window.__HEPA_RUNTIME_CONFIG__ = {
+      VITE_ADMIN_OWNER_EMAIL: "owner@example.com",
+      VITE_ADMIN_REQUEST_EMAIL_API_URL: "https://api.hepa.sa/",
+    };
+    firestoreMocks.getDoc.mockResolvedValue({
+      exists: () => false,
+    });
+    firestoreMocks.setDoc.mockResolvedValue(undefined);
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: vi.fn().mockResolvedValue({
+        ok: true,
+        id: "msg-1",
+      }),
+    });
+
+    const { adminRequestOwnerNotificationTransport, submitAdminAccessRequest } = await import("@/lib/firebase/adminRequests");
+    const result = await submitAdminAccessRequest({
+      uid: "uid-1",
+      email: "Requester@Example.com",
+      displayName: "Requester",
+    } as never);
+
+    expect(adminRequestOwnerNotificationTransport).toBe("api");
+    expect(result.emailQueued).toBe(true);
+    expect(firestoreMocks.addDoc).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.hepa.sa/send-admin-request-email",
+      expect.objectContaining({
+        method: "POST",
+      }),
+    );
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({
+      requesterEmail: "requester@example.com",
+      displayName: "Requester",
+      reviewUrl: expect.stringMatching(/\/admin$/),
     });
   });
 });

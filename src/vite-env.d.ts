@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_ADMIN_PATH?: string;
+  readonly VITE_ADMIN_REQUEST_EMAIL_API_URL?: string;
   readonly VITE_FIREBASE_API_KEY?: string;
   readonly VITE_FIREBASE_AUTH_DOMAIN?: string;
   readonly VITE_FIREBASE_PROJECT_ID?: string;
@@ -26,6 +27,7 @@ type HepaRuntimeEnv = Partial<
     | "VITE_FIREBASE_MESSAGING_SENDER_ID"
     | "VITE_FIREBASE_APP_ID"
     | "VITE_FIREBASE_MEASUREMENT_ID"
+    | "VITE_ADMIN_REQUEST_EMAIL_API_URL"
     | "VITE_ADMIN_OWNER_EMAIL"
   >
 >;

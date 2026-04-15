@@ -41,6 +41,7 @@ export default function handler(_req: unknown, res: ApiResponse) {
       "FIREBASE_MESSAGING_SENDER_ID",
     ),
     measurementId: firstEnv("VITE_FIREBASE_MEASUREMENT_ID", "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID", "FIREBASE_MEASUREMENT_ID"),
+    adminRequestEmailApiUrl: firstEnv("VITE_ADMIN_REQUEST_EMAIL_API_URL", "NEXT_PUBLIC_ADMIN_REQUEST_EMAIL_API_URL"),
     ownerEmail: firstEnv("VITE_ADMIN_OWNER_EMAIL", "NEXT_PUBLIC_ADMIN_OWNER_EMAIL"),
   };
 
