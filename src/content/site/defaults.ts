@@ -346,6 +346,8 @@ const baseSiteContent = {
       serviceOptions: contactContent.serviceOptions.map((option) => ({ ...option })),
       supportNote: contactContent.supportNote,
       submissionRecipientEmail: contactContent.submissionRecipientEmail,
+      submissionCcEmails: [...contactContent.submissionCcEmails],
+      actions: contactContent.actions.map((action) => ({ ...action })),
       successMessage: { ...contactContent.successMessage },
       errorMessage: { ...contactContent.errorMessage },
       briefChecklist: contactBriefChecklist,

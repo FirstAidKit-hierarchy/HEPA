@@ -65,6 +65,9 @@ describe("submitAdminAccessRequest", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
+    vi.stubEnv("VITE_ADMIN_REQUEST_EMAIL_API_URL", "");
+    vi.stubEnv("VITE_ADMIN_OWNER_EMAIL", "");
     fetchMock.mockReset();
     vi.stubGlobal("fetch", fetchMock);
     window.__HEPA_RUNTIME_CONFIG__ = {

@@ -6,6 +6,7 @@ import {
   getContactFormEmailApiUrl,
   isValidEmailAddress,
   loadContactFormDraft,
+  normalizeEmailAddressList,
   saveContactFormDraft,
 } from "@/lib/contact-form";
 
@@ -72,5 +73,11 @@ describe("contact form helpers", () => {
   it("validates email addresses", () => {
     expect(isValidEmailAddress("team@hepa.sa")).toBe(true);
     expect(isValidEmailAddress("not-an-email")).toBe(false);
+  });
+
+  it("normalizes CC email lists", () => {
+    expect(
+      normalizeEmailAddressList([" Info@DigitalHepa.com ", "copy@hepa.sa", "info@digitalhepa.com", "bad-email", ""]),
+    ).toEqual(["info@digitalhepa.com", "copy@hepa.sa"]);
   });
 });

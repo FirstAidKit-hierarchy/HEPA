@@ -31,6 +31,18 @@ export const emptyContactFormValues: ContactFormValues = {
 
 export const isValidEmailAddress = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
+export const normalizeEmailAddressList = (value: unknown) => {
+  const source = Array.isArray(value) ? value : typeof value === "string" ? value.split(/[,\n;]/) : [];
+
+  return Array.from(
+    new Set(
+      source
+        .map((item) => normalizeString(item).toLowerCase())
+        .filter((item) => item.length > 0 && isValidEmailAddress(item)),
+    ),
+  );
+};
+
 export const normalizeContactFormValues = (value: unknown): ContactFormValues => {
   if (!value || typeof value !== "object") {
     return { ...emptyContactFormValues };

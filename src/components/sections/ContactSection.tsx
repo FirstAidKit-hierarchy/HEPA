@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AlertCircle, Mail, MapPin, Send } from "lucide-react";
-import { Reveal, SectionHeading } from "@/components/common";
+import { Reveal, SectionHeading, SiteLink } from "@/components/common";
 import { useSiteContent } from "@/components/providers";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   getContactFormEmailApiUrl,
   isValidEmailAddress,
   loadContactFormDraft,
+  normalizeEmailAddressList,
   saveContactFormDraft,
   type ContactFormValues,
 } from "@/lib/contact-form";
@@ -36,6 +37,7 @@ const ContactSection = () => {
   const [formValues, setFormValues] = useState<ContactFormValues>(emptyContactFormValues);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errors, setErrors] = useState<FormErrors>({});
+  const contactActions = contact.actions.filter((action) => action.label.trim().length > 0 && action.href.trim().length > 0);
 
   useEffect(() => {
     const savedDraft = loadContactFormDraft();
@@ -108,12 +110,14 @@ const ContactSection = () => {
 
     const requestEmailApiUrl = getContactFormEmailApiUrl();
     const recipientEmail = contact.submissionRecipientEmail.trim().toLowerCase();
+    const ccEmails = normalizeEmailAddressList(contact.submissionCcEmails).filter((email) => email !== recipientEmail);
     const selectedServiceLabel = contact.serviceOptions.find((option) => option.value === formValues.service)?.label ?? formValues.service;
 
     if (!requestEmailApiUrl || !isValidEmailAddress(recipientEmail)) {
       console.error("Contact form email delivery is not configured correctly.", {
         hasApiUrl: Boolean(requestEmailApiUrl),
         recipientEmail,
+        ccEmails,
       });
       saveContactFormDraft(formValues);
       setSubmitState("failed");
@@ -137,6 +141,7 @@ const ContactSection = () => {
           ...formValues,
           service: selectedServiceLabel,
           recipientEmail,
+          ccEmails,
           pageUrl: typeof window === "undefined" ? "/contact" : window.location.href,
         }),
       });
@@ -211,6 +216,22 @@ const ContactSection = () => {
                 );
               })}
             </div>
+            {contactActions.length ? (
+              <div className="mt-6 flex flex-wrap gap-3">
+                {contactActions.map((action) => (
+                  <Button
+                    key={`${action.label}-${action.href}`}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="rounded-full border-white/12 bg-white/[0.05] text-white hover:bg-white/10 hover:text-white"
+                  >
+                    <SiteLink href={action.href}>{action.label}</SiteLink>
+                  </Button>
+                ))}
+              </div>
+            ) : null}
             <div className="mt-8 rounded-[1.9rem] border border-white/12 bg-white/[0.06] p-6 shadow-[0_20px_52px_rgba(8,15,28,0.14)] backdrop-blur-xl">
               <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#79D3FF]">What to include in your brief</p>
               <ul className="mt-5 space-y-3 text-sm leading-6 text-slate-200/85">

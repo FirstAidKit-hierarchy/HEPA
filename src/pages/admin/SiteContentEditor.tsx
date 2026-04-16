@@ -23,6 +23,7 @@ const formatLabel = (value: string) =>
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
     .replace(/[-_]/g, " ")
     .replace(/\bcta\b/gi, "CTA")
+    .replace(/\bcc\b/gi, "CC")
     .replace(/\burl\b/gi, "URL")
     .replace(/\bid\b/gi, "ID")
     .replace(/\s+/g, " ")
@@ -43,6 +44,17 @@ const getArrayAddSample = (fieldPath: string, arrayTemplate: unknown[], value: u
       name: "New partner",
       lightLogo: "",
       darkLogo: "",
+    };
+  }
+
+  if (fieldPath === "home.contact.submissionCcEmails") {
+    return "copy@example.com";
+  }
+
+  if (fieldPath === "home.contact.actions") {
+    return {
+      label: "New action",
+      href: "/contact",
     };
   }
 

@@ -5,6 +5,11 @@ type ContactInfoItem = {
   label: string;
 };
 
+type ContactAction = {
+  label: string;
+  href: string;
+};
+
 export const contactContent = {
   eyebrow: "Start The Conversation",
   title: "Talk to HEPA about a pricing, access, or evidence question",
@@ -29,6 +34,8 @@ export const contactContent = {
   supportNote:
     "Include the audience, market, and delivery format you need so the HEPA team can route your request correctly.",
   submissionRecipientEmail: "info@digitalhepa.com",
+  submissionCcEmails: [] as string[],
+  actions: [] as ContactAction[],
   successMessage: {
     title: "Thanks. Your request has been captured.",
     description: "A HEPA team member can now review the brief and follow up with the next step.",

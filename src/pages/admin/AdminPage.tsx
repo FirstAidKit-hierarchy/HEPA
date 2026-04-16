@@ -34,6 +34,7 @@ import { AnimatedHepaLogo } from "@/components/brand";
 import { useAppTheme } from "@/components/providers";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/sonner";
 import {
   adminRequestOwnerEmail,
@@ -53,6 +54,7 @@ import {
   type AdminUserRecord,
 } from "@/lib/firebase/adminRequests";
 import { setManagedAdminPassword } from "@/lib/firebase/adminPasswords";
+import { sendAdminManualEmail } from "@/lib/firebase/adminManualEmail";
 import { firebaseAuth, googleProvider, isFirebaseConfigured } from "@/lib/firebase/client";
 import { isAdminUser, loadSiteContent, saveSiteContent } from "@/lib/firebase/siteContent";
 import { normalizePagePath } from "@/lib/site-pages";
@@ -103,6 +105,114 @@ const sectionConfig = [
 
 type SectionKey = (typeof sectionConfig)[number]["key"];
 const pageViewSections = sectionConfig.filter((section) => section.key !== "customPages");
+
+const homeEditorSectionConfig = [
+  {
+    key: "siteShell",
+    label: "Site shell",
+    description: "Navigation, primary CTA, footer, and shared shell content used across the public site.",
+  },
+  {
+    key: "hero",
+    label: "Hero",
+    description: "Top-of-page message, visual framing, and first call to action.",
+  },
+  {
+    key: "audiences",
+    label: "Who we help",
+    description: "Audience cards that explain who HEPA supports and the outcome for each group.",
+  },
+  {
+    key: "solutions",
+    label: "Capabilities",
+    description: "Service cards, side panel copy, and proof points for what HEPA delivers.",
+  },
+  {
+    key: "ctaPanels",
+    label: "CTA panels",
+    description: "Mid-page action panels that push visitors toward a next step.",
+  },
+  {
+    key: "productProof",
+    label: "Proof",
+    description: "Preview cards, supporting text, and product proof messaging.",
+  },
+  {
+    key: "caseStudies",
+    label: "Case studies",
+    description: "Project snapshots, labels, and case study highlights.",
+  },
+  {
+    key: "workflow",
+    label: "Workflow",
+    description: "How-it-works steps and the delivery process explanation.",
+  },
+  {
+    key: "trust",
+    label: "Trust",
+    description: "Trust signals, stats, testimonial, and launch checklist.",
+  },
+  {
+    key: "insights",
+    label: "Insights",
+    description: "Insight cards, article previews, and editorial section copy.",
+  },
+  {
+    key: "contact",
+    label: "Contact",
+    description: "Form copy, visible contact info, recipient email, CC emails, and action links.",
+  },
+  {
+    key: "partnersSection",
+    label: "Partners",
+    description: "Partner logos, supporting copy, and section presentation.",
+  },
+] as const;
+
+type HomeEditorSectionKey = (typeof homeEditorSectionConfig)[number]["key"];
+const HOME_EDITOR_SECTION_STORAGE_KEY = "hepa.admin.homeEditorSection";
+const defaultHomeEditorSection: HomeEditorSectionKey = "contact";
+const defaultManualEmailDomainSuffix = "@hepa.sa";
+
+const normalizeManualEmailLocalPart = (value: string) => {
+  const normalizedValue = value.trim().toLowerCase();
+
+  if (!normalizedValue) {
+    return "";
+  }
+
+  if (normalizedValue.endsWith(defaultManualEmailDomainSuffix)) {
+    return normalizedValue.slice(0, -defaultManualEmailDomainSuffix.length);
+  }
+
+  if (normalizedValue.includes("@")) {
+    return normalizedValue.split("@")[0] ?? "";
+  }
+
+  return normalizedValue;
+};
+
+const isHomeEditorSectionKey = (value: unknown): value is HomeEditorSectionKey =>
+  homeEditorSectionConfig.some((section) => section.key === value);
+
+const getInitialHomeEditorSection = (): HomeEditorSectionKey => {
+  if (typeof window === "undefined") {
+    return defaultHomeEditorSection;
+  }
+
+  const storedValue = window.localStorage.getItem(HOME_EDITOR_SECTION_STORAGE_KEY);
+  return isHomeEditorSectionKey(storedValue) ? storedValue : defaultHomeEditorSection;
+};
+
+const emptyManualEmailDraft = {
+  fromName: "",
+  fromEmail: "",
+  to: "",
+  cc: "",
+  bcc: "",
+  subject: "",
+  message: "",
+};
 
 const Panel = ({
   eyebrow,
@@ -226,6 +336,7 @@ const AdminPage = () => {
   const themeButtonLabel =
     preference === "system" ? (isDark ? "Switch to light mode" : "Switch to dark mode") : "Use system theme";
   const [activeSection, setActiveSection] = useState<SectionKey>("home");
+  const [activeHomeEditorSection, setActiveHomeEditorSection] = useState<HomeEditorSectionKey>(() => getInitialHomeEditorSection());
   const [user, setUser] = useState<User | null>(firebaseAuth?.currentUser ?? null);
   const [isCheckingSession, setIsCheckingSession] = useState(isFirebaseConfigured);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
@@ -244,6 +355,8 @@ const AdminPage = () => {
   const [selectedManagedPasswordUid, setSelectedManagedPasswordUid] = useState("");
   const [managedPassword, setManagedPassword] = useState("");
   const [confirmManagedPassword, setConfirmManagedPassword] = useState("");
+  const [manualEmailDraft, setManualEmailDraft] = useState(() => ({ ...emptyManualEmailDraft }));
+  const [isSendingManualEmail, setIsSendingManualEmail] = useState(false);
   const [draft, setDraft] = useState<SiteContent>(() => createSiteContentDraft(defaultSiteContent));
   const [publishedContent, setPublishedContent] = useState<SiteContent>(() => createSiteContentDraft(defaultSiteContent));
   const [activeCustomPageId, setActiveCustomPageId] = useState<string | null>(null);
@@ -256,6 +369,14 @@ const AdminPage = () => {
   const currentAdminRecord = user ? adminUsers.find((admin) => admin.uid === user.uid) ?? null : null;
   const isOwner = isOwnerUser(user) || currentAdminRecord?.role === "owner";
   const canManageAccess = isOwner;
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(HOME_EDITOR_SECTION_STORAGE_KEY, activeHomeEditorSection);
+  }, [activeHomeEditorSection]);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -806,7 +927,57 @@ const AdminPage = () => {
     }
   };
 
+  const handleSendManualEmail = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!user) {
+      return;
+    }
+
+    try {
+      if (!canManageAccess) {
+        toast.error("Only the owner can send manual emails.");
+        return;
+      }
+
+      if (!manualEmailDraft.to.trim()) {
+        toast.error("Enter at least one recipient.");
+        return;
+      }
+
+      if (!manualEmailDraft.subject.trim()) {
+        toast.error("Enter a subject.");
+        return;
+      }
+
+      if (!manualEmailDraft.message.trim()) {
+        toast.error("Enter a message.");
+        return;
+      }
+
+      setIsSendingManualEmail(true);
+      await sendAdminManualEmail(manualEmailDraft);
+      setManualEmailDraft((current) => ({
+        ...current,
+        fromEmail: "",
+        to: "",
+        cc: "",
+        bcc: "",
+        subject: "",
+        message: "",
+      }));
+      toast.success("Email sent.");
+    } catch (error) {
+      console.error("Unable to send the manual email.", error);
+      toast.error(getErrorMessage(error, "Unable to send the manual email."));
+    } finally {
+      setIsSendingManualEmail(false);
+    }
+  };
+
   const activeSectionConfig = sectionConfig.find((section) => section.key === activeSection) ?? sectionConfig[0];
+  const activeHomeEditorSectionConfig =
+    homeEditorSectionConfig.find((section) => section.key === activeHomeEditorSection) ?? homeEditorSectionConfig[0];
   const activeValue = draft[activeSection];
   const activeTemplate = defaultSiteContent[activeSection];
   const activeNotFoundPreviewHref = draft.notFoundPageRoute.aliasPath || NOT_FOUND_PREVIEW_PATH;
@@ -1409,6 +1580,87 @@ const AdminPage = () => {
                     )}
                   </Panel>
                 ) : null}
+
+                {showEditorWorkspace ? (
+                  <Panel
+                    eyebrow="Manual email"
+                    title="Send a one-off email"
+                    description="Owner accounts can send a manual email through the configured Worker and verified Resend domain."
+                  >
+                    {!canManageAccess ? (
+                      <div className="rounded-[1.35rem] border border-white/10 bg-white/[0.05] p-4 text-sm leading-7 text-slate-100/78">
+                        Only the owner account can use the manual email sender.
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSendManualEmail} className="space-y-4">
+                        <div className="rounded-[1.2rem] border border-white/10 bg-white/[0.04] p-4 text-xs leading-6 text-slate-300/76">
+                          Use a verified sender address on your domain. Enter only the local part in <span className="text-white">From email</span>;
+                          the <span className="text-white">{defaultManualEmailDomainSuffix}</span> suffix is fixed. Leave it empty to use the Worker
+                          default sender address, and set any display name you want in <span className="text-white">From name</span>.
+                        </div>
+
+                        <Input
+                          value={manualEmailDraft.fromName}
+                          onChange={(event) => setManualEmailDraft((current) => ({ ...current, fromName: event.target.value }))}
+                          placeholder="From name, for example HEPA Team"
+                          className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
+                        />
+                        <div className="relative">
+                          <Input
+                            value={manualEmailDraft.fromEmail}
+                            onChange={(event) =>
+                              setManualEmailDraft((current) => ({
+                                ...current,
+                                fromEmail: normalizeManualEmailLocalPart(event.target.value),
+                              }))
+                            }
+                            placeholder="From email name, for example noreply"
+                            className="border-white/12 bg-white/10 pr-28 text-white placeholder:text-slate-300/55"
+                          />
+                          <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm font-medium text-slate-200/82">
+                            {defaultManualEmailDomainSuffix}
+                          </div>
+                        </div>
+                        <Input
+                          value={manualEmailDraft.to}
+                          onChange={(event) => setManualEmailDraft((current) => ({ ...current, to: event.target.value }))}
+                          placeholder="To emails, separated by commas"
+                          className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
+                        />
+                        <Input
+                          value={manualEmailDraft.cc}
+                          onChange={(event) => setManualEmailDraft((current) => ({ ...current, cc: event.target.value }))}
+                          placeholder="CC emails, optional"
+                          className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
+                        />
+                        <Input
+                          value={manualEmailDraft.bcc}
+                          onChange={(event) => setManualEmailDraft((current) => ({ ...current, bcc: event.target.value }))}
+                          placeholder="BCC emails, optional"
+                          className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
+                        />
+                        <Input
+                          value={manualEmailDraft.subject}
+                          onChange={(event) => setManualEmailDraft((current) => ({ ...current, subject: event.target.value }))}
+                          placeholder="Subject"
+                          className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
+                        />
+                        <Textarea
+                          rows={8}
+                          value={manualEmailDraft.message}
+                          onChange={(event) => setManualEmailDraft((current) => ({ ...current, message: event.target.value }))}
+                          placeholder="Write the email message here."
+                          className="border-white/12 bg-white/10 text-white placeholder:text-slate-300/55"
+                        />
+
+                        <Button type="submit" variant="hero" disabled={isSendingManualEmail} className="w-full rounded-full">
+                          {isSendingManualEmail ? <Loader2 className="animate-spin" size={16} /> : <Mail size={16} />}
+                          Send email
+                        </Button>
+                      </form>
+                    )}
+                  </Panel>
+                ) : null}
               </div>
 
               {showEditorWorkspace ? (
@@ -1429,7 +1681,7 @@ const AdminPage = () => {
                         {activeSection === "customPages"
                           ? "Add pages, edit the public URL, and drag blocks into the order you want."
                           : activeSection === "home"
-                            ? "Edit the shared site shell and homepage sections from one screen."
+                            ? "Choose a subsection, then edit that part of the home experience without scrolling the full content tree."
                           : activeSection === "notFoundPage"
                             ? "Set an optional route alias, apply it to the draft, then save to publish it while keeping the fixed fallback route."
                             : "Use the add and remove controls inside list sections to build new tiles, cards, references, prompts, or links."}
@@ -1451,45 +1703,75 @@ const AdminPage = () => {
                       ) : activeSection === "home" ? (
                         <div className="space-y-6">
                           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 sm:p-5">
-                            <div className="mb-5">
-                              <p className="text-sm font-semibold text-white">Site shell</p>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-white">Home page sections</p>
                               <p className="mt-1 text-xs leading-6 text-slate-300/72">
-                                Edit the shared navigation, primary CTA, and footer content used across the public site.
+                                Pick one section and edit only that part. Your last open section stays selected when you come back.
                               </p>
                             </div>
-                            <SiteContentEditor
-                              label="Site shell"
-                              value={draft.siteShell}
-                              template={defaultSiteContent.siteShell}
-                              path={["siteShell"]}
-                              onChange={(nextValue) =>
-                                setDraft((current) => ({
-                                  ...current,
-                                  siteShell: nextValue as SiteContent["siteShell"],
-                                }))
-                              }
-                            />
+                            <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+                              {homeEditorSectionConfig.map((section) => {
+                                const isActive = section.key === activeHomeEditorSection;
+
+                                return (
+                                  <button
+                                    key={section.key}
+                                    type="button"
+                                    onClick={() => setActiveHomeEditorSection(section.key)}
+                                    className={cn(
+                                      "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                                      isActive
+                                        ? "border-[#79D3FF]/55 bg-[#79D3FF]/12 text-white"
+                                        : "border-white/10 bg-white/[0.03] text-slate-200 hover:bg-white/[0.06]",
+                                    )}
+                                  >
+                                    {section.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
 
                           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 sm:p-5">
                             <div className="mb-5">
-                              <p className="text-sm font-semibold text-white">Home page sections</p>
-                              <p className="mt-1 text-xs leading-6 text-slate-300/72">
-                                Edit the homepage hero, tiles, proof, trust, insights, contact, and partner sections.
-                              </p>
+                              <p className="text-sm font-semibold text-white">{activeHomeEditorSectionConfig.label}</p>
+                              <p className="mt-1 text-xs leading-6 text-slate-300/72">{activeHomeEditorSectionConfig.description}</p>
+                              {activeHomeEditorSection === "contact" ? (
+                                <p className="mt-2 text-xs leading-6 text-slate-300/60">
+                                  Contact delivery settings live here, including the submission recipient, CC emails, and action links.
+                                </p>
+                              ) : null}
                             </div>
-                            <SiteContentEditor
-                              label={activeSectionConfig.label}
-                              value={draft.home}
-                              template={defaultSiteContent.home}
-                              path={["home"]}
-                              onChange={(nextValue) =>
-                                setDraft((current) => ({
-                                  ...current,
-                                  home: nextValue as SiteContent["home"],
-                                }))
-                              }
-                            />
+                            {activeHomeEditorSection === "siteShell" ? (
+                              <SiteContentEditor
+                                label="Site shell"
+                                value={draft.siteShell}
+                                template={defaultSiteContent.siteShell}
+                                path={["siteShell"]}
+                                onChange={(nextValue) =>
+                                  setDraft((current) => ({
+                                    ...current,
+                                    siteShell: nextValue as SiteContent["siteShell"],
+                                  }))
+                                }
+                              />
+                            ) : (
+                              <SiteContentEditor
+                                label={activeHomeEditorSectionConfig.label}
+                                value={draft.home[activeHomeEditorSection]}
+                                template={defaultSiteContent.home[activeHomeEditorSection]}
+                                path={["home", activeHomeEditorSection]}
+                                onChange={(nextValue) =>
+                                  setDraft((current) => ({
+                                    ...current,
+                                    home: {
+                                      ...current.home,
+                                      [activeHomeEditorSection]: nextValue as SiteContent["home"][typeof activeHomeEditorSection],
+                                    },
+                                  }))
+                                }
+                              />
+                            )}
                           </div>
                         </div>
                       ) : activeSection === "notFoundPage" ? (
