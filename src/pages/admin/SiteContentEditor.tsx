@@ -89,6 +89,43 @@ const getSelectOptions = (fieldPath: string) => {
   return null;
 };
 
+const getOrderedObjectEntries = (fieldPath: string, value: Record<string, unknown>) => {
+  const entries = Object.entries(value);
+
+  if (fieldPath === "home.contact") {
+    const preferredOrder = [
+      "submissionRecipientEmail",
+      "submissionCcEmails",
+      "actions",
+      "contactItems",
+      "eyebrow",
+      "title",
+      "description",
+      "engagementPrompts",
+      "serviceOptions",
+      "supportNote",
+      "formIntro",
+      "briefChecklist",
+      "successMessage",
+      "errorMessage",
+    ];
+    const orderMap = new Map(preferredOrder.map((key, index) => [key, index]));
+
+    return entries.sort(([leftKey], [rightKey]) => {
+      const leftIndex = orderMap.get(leftKey) ?? Number.MAX_SAFE_INTEGER;
+      const rightIndex = orderMap.get(rightKey) ?? Number.MAX_SAFE_INTEGER;
+
+      if (leftIndex === rightIndex) {
+        return leftKey.localeCompare(rightKey);
+      }
+
+      return leftIndex - rightIndex;
+    });
+  }
+
+  return entries;
+};
+
 type SiteContentEditorProps = {
   label: string;
   value: unknown;
@@ -207,6 +244,8 @@ const SiteContentEditor = ({
   }
 
   if (isPlainObject(value)) {
+    const orderedEntries = getOrderedObjectEntries(fieldPath, value);
+
     return (
       <div
         className={cn(
@@ -219,7 +258,7 @@ const SiteContentEditor = ({
             <Label className="text-sm text-white">{label}</Label>
           </div>
         ) : null}
-        {Object.entries(value).map(([key, childValue]) => (
+        {orderedEntries.map(([key, childValue]) => (
           <SiteContentEditor
             key={`${fieldPath}-${key}`}
             label={formatLabel(key)}

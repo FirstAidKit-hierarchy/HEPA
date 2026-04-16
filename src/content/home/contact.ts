@@ -37,8 +37,8 @@ export const contactContent = {
   submissionCcEmails: [] as string[],
   actions: [] as ContactAction[],
   successMessage: {
-    title: "Thanks. Your request has been captured.",
-    description: "A HEPA team member can now review the brief and follow up with the next step.",
+    title: "Thank you. Your request has been received.",
+    description: "A member of the HEPA team will review your brief and follow up with the appropriate next step.",
   },
   errorMessage: {
     title: "We could not send your request.",
