@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <title>HEPA Email Previews</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+
+      body {
+        margin: 0;
+        padding: 32px 16px 56px;
+        background: #edf3f8;
+        font-family: Inter, system-ui, sans-serif;
+        color: #122033;
+      }
+
+      .page-wrap {
+        margin: 0 auto;
+        max-width: 880px;
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 32px;
+        line-height: 1.1;
+        font-weight: 700;
+      }
+
+      .page-copy {
+        margin: 12px 0 0;
+        max-width: 700px;
+        font-size: 15px;
+        line-height: 1.8;
+        color: #5f7289;
+      }
+
+      .preview-block {
+        margin-top: 28px;
+      }
+
+      .preview-label {
+        margin: 0 0 14px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #79d3ff;
+      }
+
+      .email-logo-dark {
+        display: none;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body,
+        .email-bg {
+          background: #08111d !important;
+          color: #f7fbff !important;
+        }
+
+        .page-copy {
+          color: #a7bbd1 !important;
+        }
+
+        .email-shell {
+          background: linear-gradient(180deg, rgba(8, 15, 28, 0.76), rgba(8, 15, 28, 0.92)) !important;
+          border-color: #22384c !important;
+          box-shadow: 0 28px 70px rgba(8, 15, 28, 0.26) !important;
+        }
+
+        .email-header {
+          border-bottom-color: #22384c !important;
+        }
+
+        .email-muted {
+          color: #a7bbd1 !important;
+        }
+
+        .email-title,
+        .email-text {
+          color: #f7fbff !important;
+        }
+
+        .email-field-row {
+          border-bottom-color: #23364d !important;
+        }
+
+        .email-label {
+          color: #8fdcff !important;
+        }
+
+        .email-divider {
+          border-top-color: #23364d !important;
+        }
+
+        .email-footer {
+          color: #90a2b8 !important;
+        }
+
+        .email-button-wrap {
+          background: linear-gradient(135deg, #7ed957, #55c7a1) !important;
+        }
+
+        .email-button {
+          color: #08111d !important;
+        }
+
+        .email-logo-light {
+          display: none !important;
+        }
+
+        .email-logo-dark {
+          display: inline-block !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="email-bg">
+    <div class="page-wrap">
+      <h1 class="page-title">HEPA Email Previews</h1>
+      <p class="page-copy">
+        This page shows the current minimal email layout for all three flows: manual email, contact form email, and admin
+        access request.
+      </p>
+
+      <section class="preview-block">
+        <p class="preview-label">Manual Email</p>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-bg">
+          <tr>
+            <td>
+              <table
+                role="presentation"
+                cellspacing="0"
+                cellpadding="0"
+                border="0"
+                width="100%"
+                style="max-width:640px;margin:0 auto;border-radius:28px;border:1px solid #d6e2ec;background:linear-gradient(180deg,#fbfdff,#f2f7fb);overflow:hidden;box-shadow:0 20px 48px rgba(148,163,184,0.14);"
+                class="email-shell"
+              >
+                <tr>
+                  <td style="padding:26px 28px 18px;border-bottom:1px solid #dde7ef;" class="email-header">
+                    <div style="margin:0 0 18px;">
+                      <a href="https://hepa.sa" style="display:inline-block;text-decoration:none;">
+                        <img
+                          src="https://hepa.sa/icons/hepa-logo.svg"
+                          alt="HEPA"
+                          width="122"
+                          style="display:block;width:122px;height:auto;border:0;"
+                          class="email-logo-light"
+                        />
+                        <img
+                          src="https://hepa.sa/icons/hepa-logo-dark.svg"
+                          alt="HEPA"
+                          width="122"
+                          style="display:none;width:122px;height:auto;border:0;"
+                          class="email-logo-dark"
+                        />
+                      </a>
+                    </div>
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#79d3ff;">
+                      HEPA message
+                    </p>
+                    <h1 style="margin:0;font-size:30px;line-height:1.16;font-weight:700;color:#122033;" class="email-title">
+                      Quarterly access review
+                    </h1>
+                    <p style="margin:12px 0 0;font-size:15px;line-height:1.75;color:#5f7289;" class="email-muted">
+                      A direct message from the HEPA team.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:28px 28px 12px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:0 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              From
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;word-break:break-word;" class="email-text">
+                              HEPA Team
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:12px 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Sender address
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;word-break:break-word;" class="email-text">
+                              info@hepa.sa
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div style="padding:18px 0 0;">
+                      <p style="margin:0 0 14px;font-size:15px;line-height:1.8;color:#122033;" class="email-text">
+                        Here is the draft access review for the next pricing workshop.
+                      </p>
+                      <p style="margin:0 0 14px;font-size:15px;line-height:1.8;color:#122033;" class="email-text">
+                        We can send the final summary and action list once the stakeholder comments are complete.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 28px 28px;">
+                    <div style="border-top:1px solid #d8e2ec;padding-top:18px;font-size:12px;line-height:1.8;color:#6c7b90;" class="email-divider email-footer">
+                      Sent from HEPA. You can reply directly to this email to continue the conversation.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <section class="preview-block">
+        <p class="preview-label">Contact Form Email</p>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-bg">
+          <tr>
+            <td>
+              <table
+                role="presentation"
+                cellspacing="0"
+                cellpadding="0"
+                border="0"
+                width="100%"
+                style="max-width:640px;margin:0 auto;border-radius:28px;border:1px solid #d6e2ec;background:linear-gradient(180deg,#fbfdff,#f2f7fb);overflow:hidden;box-shadow:0 20px 48px rgba(148,163,184,0.14);"
+                class="email-shell"
+              >
+                <tr>
+                  <td style="padding:26px 28px 18px;border-bottom:1px solid #dde7ef;" class="email-header">
+                    <div style="margin:0 0 18px;">
+                      <a href="https://hepa.sa" style="display:inline-block;text-decoration:none;">
+                        <img
+                          src="https://hepa.sa/icons/hepa-logo.svg"
+                          alt="HEPA"
+                          width="122"
+                          style="display:block;width:122px;height:auto;border:0;"
+                          class="email-logo-light"
+                        />
+                        <img
+                          src="https://hepa.sa/icons/hepa-logo-dark.svg"
+                          alt="HEPA"
+                          width="122"
+                          style="display:none;width:122px;height:auto;border:0;"
+                          class="email-logo-dark"
+                        />
+                      </a>
+                    </div>
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#79d3ff;">
+                      New inbound lead
+                    </p>
+                    <h1 style="margin:0;font-size:30px;line-height:1.16;font-weight:700;color:#122033;" class="email-title">
+                      Sarah Almutairi
+                    </h1>
+                    <p style="margin:12px 0 0;font-size:15px;line-height:1.75;color:#5f7289;" class="email-muted">
+                      New HEPA contact form submission for pricing and access research.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:28px 28px 12px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:0 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Contact
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;" class="email-text">Sarah Almutairi</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:12px 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Company
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;" class="email-text">HEPA Solutions</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:12px 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Email
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;" class="email-text">sarah@hepa.sa</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:12px 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Project need
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;" class="email-text">Pricing and access research</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:12px 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Submitted at
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;" class="email-text">2026-04-16T12:18:00.000Z</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div style="padding:18px 0 0;">
+                      <div style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                        Message
+                      </div>
+                      <p style="margin:0 0 14px;font-size:15px;line-height:1.8;color:#122033;" class="email-text">
+                        We need a concise evidence summary for the next access committee discussion.
+                      </p>
+                    </div>
+
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0 0;">
+                      <tr>
+                        <td style="border-radius:999px;background:linear-gradient(135deg,#7ed957,#55c7a1);text-align:center;" class="email-button-wrap">
+                          <a
+                            href="https://hepa.sa/#contact"
+                            style="display:inline-block;padding:14px 24px;font-size:14px;font-weight:700;line-height:1;color:#091220;text-decoration:none;"
+                            class="email-button"
+                          >
+                            Open source page
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 28px 28px;">
+                    <div style="border-top:1px solid #d8e2ec;padding-top:18px;font-size:12px;line-height:1.8;color:#6c7b90;" class="email-divider email-footer">
+                      Sent from HEPA. Reply to this email if you need to continue the conversation.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <section class="preview-block">
+        <p class="preview-label">Admin Request Email</p>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-bg">
+          <tr>
+            <td>
+              <table
+                role="presentation"
+                cellspacing="0"
+                cellpadding="0"
+                border="0"
+                width="100%"
+                style="max-width:640px;margin:0 auto;border-radius:28px;border:1px solid #d6e2ec;background:linear-gradient(180deg,#fbfdff,#f2f7fb);overflow:hidden;box-shadow:0 20px 48px rgba(148,163,184,0.14);"
+                class="email-shell"
+              >
+                <tr>
+                  <td style="padding:26px 28px 18px;border-bottom:1px solid #dde7ef;" class="email-header">
+                    <div style="margin:0 0 18px;">
+                      <a href="https://hepa.sa" style="display:inline-block;text-decoration:none;">
+                        <img
+                          src="https://hepa.sa/icons/hepa-logo.svg"
+                          alt="HEPA"
+                          width="122"
+                          style="display:block;width:122px;height:auto;border:0;"
+                          class="email-logo-light"
+                        />
+                        <img
+                          src="https://hepa.sa/icons/hepa-logo-dark.svg"
+                          alt="HEPA"
+                          width="122"
+                          style="display:none;width:122px;height:auto;border:0;"
+                          class="email-logo-dark"
+                        />
+                      </a>
+                    </div>
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#79d3ff;">
+                      Admin access request
+                    </p>
+                    <h1 style="margin:0;font-size:30px;line-height:1.16;font-weight:700;color:#122033;" class="email-title">
+                      New admin request
+                    </h1>
+                    <p style="margin:12px 0 0;font-size:15px;line-height:1.75;color:#5f7289;" class="email-muted">
+                      ahuttami@hepa.sa requested access to the HEPA admin editor.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:28px 28px 12px;">
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:0 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Requester email
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;" class="email-text">ahuttami@hepa.sa</div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+                          <div style="padding:12px 0 12px;">
+                            <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">
+                              Display name
+                            </div>
+                            <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;" class="email-text">Abdulrahman Huttami</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:22px 0 0;">
+                      <tr>
+                        <td style="border-radius:999px;background:linear-gradient(135deg,#7ed957,#55c7a1);text-align:center;" class="email-button-wrap">
+                          <a
+                            href="https://hepa.sa/admin"
+                            style="display:inline-block;padding:14px 24px;font-size:14px;font-weight:700;line-height:1;color:#091220;text-decoration:none;"
+                            class="email-button"
+                          >
+                            Open admin review
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 28px 28px;">
+                    <div style="border-top:1px solid #d8e2ec;padding-top:18px;font-size:12px;line-height:1.8;color:#6c7b90;" class="email-divider email-footer">
+                      Review the request in the HEPA admin workspace and approve or decline access.
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </section>
+    </div>
+  </body>
+</html>

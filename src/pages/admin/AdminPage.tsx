@@ -1709,7 +1709,7 @@ const AdminPage = () => {
                                 Pick one section and edit only that part. Your last open section stays selected when you come back.
                               </p>
                             </div>
-                            <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+                            <div className="mt-5 flex flex-wrap gap-2">
                               {homeEditorSectionConfig.map((section) => {
                                 const isActive = section.key === activeHomeEditorSection;
 
@@ -1719,7 +1719,7 @@ const AdminPage = () => {
                                     type="button"
                                     onClick={() => setActiveHomeEditorSection(section.key)}
                                     className={cn(
-                                      "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+                                      "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                                       isActive
                                         ? "border-[#79D3FF]/55 bg-[#79D3FF]/12 text-white"
                                         : "border-white/10 bg-white/[0.03] text-slate-200 hover:bg-white/[0.06]",

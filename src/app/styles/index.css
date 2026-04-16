@@ -124,6 +124,8 @@
   html {
     scroll-behavior: smooth;
     overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(43, 138, 191, 0.55) rgba(15, 23, 42, 0.12);
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
@@ -136,6 +138,35 @@
   }
   section[id] {
     scroll-margin-top: 4.5rem;
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.08);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(43, 138, 191, 0.82), rgba(126, 217, 87, 0.82));
+    background-clip: padding-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(43, 138, 191, 0.95), rgba(126, 217, 87, 0.95));
+    background-clip: padding-box;
+  }
+
+  .dark {
+    scrollbar-color: rgba(43, 138, 191, 0.7) rgba(255, 255, 255, 0.06);
+  }
+
+  .dark ::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
   }
 }
 

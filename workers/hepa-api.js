@@ -127,12 +127,9 @@ function renderEmailField(label, value) {
 
   return `
     <tr>
-      <td style="padding:0 0 12px;">
-        <div
-          style="border:1px solid #dde7ef;border-radius:20px;background:#ffffff;padding:16px 18px;"
-          class="email-card"
-        >
-          <div style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">${escapeHtml(label)}</div>
+      <td style="padding:0 0 12px;border-bottom:1px solid #e3ebf2;" class="email-field-row">
+        <div style="padding:0 0 12px;">
+          <div style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">${escapeHtml(label)}</div>
           <div style="margin:0;font-size:15px;line-height:1.7;color:#122033;word-break:break-word;" class="email-text">${escapeHtml(value)}</div>
         </div>
       </td>
@@ -203,6 +200,10 @@ function buildHepaEmailHtml({ preheader, eyebrow, title, intro, detailsHtml = ""
         .email-card {
           background: rgba(255,255,255,0.04) !important;
           border-color: rgba(255,255,255,0.12) !important;
+        }
+
+        .email-field-row {
+          border-bottom-color: #23364d !important;
         }
 
         .email-label {
@@ -284,7 +285,7 @@ function buildHepaEmailHtml({ preheader, eyebrow, title, intro, detailsHtml = ""
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                   ${detailsHtml}
                 </table>
-                ${bodyHtml ? `<div style="padding:12px 0 0;">${bodyHtml}</div>` : ""}
+                ${bodyHtml ? `<div style="padding:18px 0 0;">${bodyHtml}</div>` : ""}
                 ${actionHtml}
               </td>
             </tr>
@@ -311,14 +312,7 @@ function buildManualEmailHtml({ senderEmail, senderName, subject, message }) {
     .filter(Boolean)
     .join("");
 
-  const bodyHtml = `
-    <div
-      style="border:1px solid #dde7ef;border-radius:20px;background:#ffffff;padding:22px 22px 10px;"
-      class="email-card"
-    >
-      ${renderEmailParagraphs(message)}
-    </div>
-  `;
+  const bodyHtml = `${renderEmailParagraphs(message)}`;
 
   return buildHepaEmailHtml({
     preheader: subject,
@@ -383,13 +377,8 @@ function buildContactFormHtmlLines({
 
   const bodyHtml = message
     ? `
-      <div
-        style="border:1px solid #dde7ef;border-radius:20px;background:#ffffff;padding:22px 22px 10px;"
-        class="email-card"
-      >
-        <div style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">Message</div>
-        ${renderEmailParagraphs(message)}
-      </div>
+      <div style="margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#5d7898;" class="email-label">Message</div>
+      ${renderEmailParagraphs(message)}
     `
     : "";
 
