@@ -61,6 +61,7 @@ import { normalizePagePath } from "@/lib/site-pages";
 import { cn } from "@/lib/utils";
 import { createCustomPageDraft, createSiteContentDraft, defaultSiteContent, type SiteContent } from "@/content/site/defaults";
 import { NOT_FOUND_PREVIEW_PATH } from "@/pages/not-found/config";
+import { PASSWORD_RESET_EMAIL_PREVIEW_PATH } from "@/pages/password-reset-email-preview/config";
 import { ADMIN_PAGE_PATH, ADMIN_PAGE_ROBOTS, ADMIN_PAGE_TITLE } from "./config";
 import AdminRouteEditor from "./AdminRouteEditor";
 import CustomPagesEditor from "./CustomPagesEditor";
@@ -1072,6 +1073,17 @@ const AdminPage = () => {
         >
           {isSendingResetEmail ? <Loader2 className="animate-spin" size={16} /> : <Mail size={16} />}
           Send password reset email
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          asChild
+          className="w-full rounded-full border-white/12 bg-white/10 text-white hover:bg-white/14 hover:text-white"
+        >
+          <Link to={PASSWORD_RESET_EMAIL_PREVIEW_PATH}>
+            <Eye size={16} />
+            Preview reset email
+          </Link>
         </Button>
       </form>
     </div>

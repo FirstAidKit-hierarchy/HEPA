@@ -2,9 +2,13 @@ import { lazy, Suspense } from "react";
 import { HomePage, NotFoundPage } from "@/pages";
 import { ADMIN_PAGE_PATH } from "@/pages/admin/config";
 import { NOT_FOUND_PREVIEW_PATH } from "@/pages/not-found/config";
+import { PASSWORD_RESET_EMAIL_PREVIEW_PATH } from "@/pages/password-reset-email-preview/config";
 import { REFERENCE_PROJECTS_PATH } from "@/pages/reference-projects/config";
 
 const AdminPage = lazy(() => import("@/pages/admin/AdminPage"));
+const PasswordResetEmailPreviewPage = lazy(
+  () => import("@/pages/password-reset-email-preview/PasswordResetEmailPreviewPage"),
+);
 const ReferenceProjectsPage = lazy(() => import("@/pages/reference-projects/ReferenceProjectsPage"));
 const ResolvedPage = lazy(() => import("@/pages/custom/ResolvedPage"));
 
@@ -26,6 +30,14 @@ export const appRoutes = [
     element: (
       <Suspense fallback={null}>
         <ReferenceProjectsPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: PASSWORD_RESET_EMAIL_PREVIEW_PATH,
+    element: (
+      <Suspense fallback={null}>
+        <PasswordResetEmailPreviewPage />
       </Suspense>
     ),
   },
