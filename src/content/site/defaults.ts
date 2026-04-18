@@ -30,6 +30,7 @@ import {
   trustContent,
   workflowContent,
 } from "@/content/home";
+import { defaultEmailTemplates } from "@/lib/emailTemplates";
 import { navigationLinks } from "@/content/navigation";
 import { normalizeOptionalPagePath, normalizePagePath } from "@/lib/site-pages";
 
@@ -378,6 +379,9 @@ const baseSiteContent = {
     title: "Page not found",
     buttonLabel: "Return to the page",
     buttonHref: "/",
+  },
+  emailTemplates: {
+    ...defaultEmailTemplates,
   },
 };
 

@@ -2,9 +2,10 @@ import { useEffect, useMemo } from "react";
 import { ArrowLeft, Link2, ShieldCheck } from "lucide-react";
 import { SiteLink } from "@/components/common";
 import { Footer, Navbar } from "@/components/layout";
+import { useSiteContent } from "@/components/providers";
 import { Button } from "@/components/ui/button";
+import { getEmailTemplatePreviewHtml } from "@/lib/emailTemplates";
 import { PASSWORD_RESET_EMAIL_PREVIEW_TITLE } from "./config";
-import passwordResetEmailTemplate from "../../../docs/firebase-password-reset-email.html?raw";
 
 function upsertMeta(name: string) {
   let element = document.head.querySelector(`meta[name="${name}"]`) as HTMLMetaElement | null;
@@ -22,13 +23,12 @@ const previewDescription =
   "Preview the HEPA Firebase password reset email inside the site shell, using the same minimal header and footer treatment as the live outbound emails.";
 
 const PasswordResetEmailPreviewPage = () => {
+  const {
+    siteContent: { emailTemplates },
+  } = useSiteContent();
   const previewHtml = useMemo(
-    () =>
-      passwordResetEmailTemplate
-        .replaceAll("%APP_NAME%", "HEPA")
-        .replaceAll("%EMAIL%", "admin@hepa.sa")
-        .replaceAll("%LINK%", "https://hepa.sa/admin?action=reset-password-preview"),
-    [],
+    () => getEmailTemplatePreviewHtml("passwordReset", emailTemplates.passwordReset),
+    [emailTemplates.passwordReset],
   );
 
   useEffect(() => {
@@ -126,8 +126,8 @@ const PasswordResetEmailPreviewPage = () => {
                     Source file
                   </div>
                   <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                    This page renders the actual HTML from <code>docs/firebase-password-reset-email.html</code> with sample
-                    values injected into the Firebase placeholders.
+                    This page renders the password reset HTML currently stored in the admin-controlled site content document,
+                    with sample values injected into the live placeholders.
                   </p>
                 </div>
               </div>
@@ -136,7 +136,7 @@ const PasswordResetEmailPreviewPage = () => {
                 <iframe
                   title="HEPA password reset email preview"
                   srcDoc={previewHtml}
-                  className="h-[1080px] w-full rounded-[1.35rem] border border-border/60 bg-white"
+                  className="h-[1080px] w-full rounded-[1.35rem] border border-border/60 bg-background"
                 />
               </div>
             </div>

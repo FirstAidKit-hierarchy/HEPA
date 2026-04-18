@@ -31,7 +31,7 @@ For this project, the core Firebase values are `VITE_FIREBASE_API_KEY`, `VITE_FI
 
 If you also maintain a separate backend-capable deployment, the optional runtime config route accepts `NEXT_PUBLIC_FIREBASE_*` names as a fallback there. The GitHub Pages production build should still use the `VITE_*` names from the GitHub Actions workflow.
 
-The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY` so the `/api/admin-passwords` route can update Firebase Auth users securely. That route is not available on GitHub Pages, so this feature only works on a separate backend-capable host or local development.
+The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY`. On `hepa.sa`, the admin page sends that action to the Cloudflare Worker using `VITE_ADMIN_REQUEST_EMAIL_API_URL` or `VITE_CONTACT_FORM_EMAIL_API_URL`. If you run a separate backend-capable host without the Worker URL, the legacy `/api/admin-passwords` route can still be used there.
 
 For repeatable setup, you can keep a local server-only service-account file at `firebase-service-account.local.json` and run:
 
@@ -49,6 +49,18 @@ In the Firebase console:
 2. Enable `Email/Password`.
 3. Create each administrator account in Firebase Authentication before giving that user editor access.
 4. After sign-in, admins can change their password from the admin page. If they forget it, they can use the reset email flow there as well.
+
+The reset email action on the admin sign-in screen is now a custom HEPA-branded flow. It no longer uses Firebase's built-in email template. The HTML is editable in the admin workspace under `Email templates`, and the Cloudflare Worker reads that Firestore-backed template when it sends the email. For production, make sure the Cloudflare Worker email backend is configured with:
+
+- `FIREBASE_API_KEY`
+- `FIREBASE_ADMIN_PROJECT_ID`
+- `FIREBASE_ADMIN_CLIENT_EMAIL`
+- `FIREBASE_ADMIN_PRIVATE_KEY`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+- `OWNER_EMAIL`
+
+The reset email link lands on the public route `/reset-password`, where the user enters a new password and completes the Firebase reset code flow in the browser.
 
 If you deploy on more than one hostname or custom domain, add each one under `Authentication -> Settings -> Authorized domains`. The app can run on any domain, but Firebase Auth still blocks sign-in from domains that are not explicitly authorized in your Firebase project.
 
@@ -236,4 +248,4 @@ The admin panel now includes a `Password overrides` section.
 2. Only accounts with the `owner` role can use it.
 3. The owner can set a new password for any approved admin or owner account without knowing that user's current password.
 
-This feature depends on the `/api/admin-passwords` server route, so it does not work on the static GitHub Pages site at `hepa.sa`. It works only where that API route and the server-side Firebase admin env vars are deployed.
+On `hepa.sa`, this feature is expected to work through the Cloudflare Worker backend at `POST /set-admin-password`. If you do not configure the Worker URL, the app falls back to the legacy `/api/admin-passwords` server route for separate backend-capable deployments.

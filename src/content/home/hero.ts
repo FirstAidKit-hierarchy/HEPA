@@ -17,7 +17,7 @@ export const heroContent = {
     download: HEPA_PROFILE_DOWNLOAD_FILENAME,
   },
   quickPoints: [
-    "Local evidence generation",
+    "Local Evidence Generation",
     "Pricing and Access research",
     "Stakeholder surveys and expert validation",
     "Decision-ready reports and dashboards",
@@ -28,15 +28,15 @@ export const heroContent = {
     items: [
       {
         label: "Teams served",
-        value: "Pharma, medtech, medical affairs, market access, and regulatory teams",
+        value: "Pharma, medtech, medical affairs, Market Access, And regulatory teams",
       },
       {
         label: "Outputs",
-        value: "Reports, dashboards, survey workflows, and insight exports",
+        value: "Reports, Dashboards, Survey Workflows, and Insight Exports",
       },
       {
-        label: "Typical questions",
-        value: "Launch planning, pricing assumptions, reimbursement insight, and access evidence",
+        label: "Typical Questions",
+        value: "Launch Planning, Pricing Assumptions, Reimbursement Insight, and Access Evidence",
       },
     ],
   },

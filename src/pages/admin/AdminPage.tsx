@@ -21,7 +21,6 @@ import {
   EmailAuthProvider,
   onAuthStateChanged,
   reauthenticateWithCredential,
-  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -56,6 +55,7 @@ import {
 import { setManagedAdminPassword } from "@/lib/firebase/adminPasswords";
 import { sendAdminManualEmail } from "@/lib/firebase/adminManualEmail";
 import { firebaseAuth, googleProvider, isFirebaseConfigured } from "@/lib/firebase/client";
+import { sendCustomPasswordResetEmail } from "@/lib/firebase/passwordResetEmail";
 import { isAdminUser, loadSiteContent, saveSiteContent } from "@/lib/firebase/siteContent";
 import { normalizePagePath } from "@/lib/site-pages";
 import { cn } from "@/lib/utils";
@@ -65,6 +65,7 @@ import { PASSWORD_RESET_EMAIL_PREVIEW_PATH } from "@/pages/password-reset-email-
 import { ADMIN_PAGE_PATH, ADMIN_PAGE_ROBOTS, ADMIN_PAGE_TITLE } from "./config";
 import AdminRouteEditor from "./AdminRouteEditor";
 import CustomPagesEditor from "./CustomPagesEditor";
+import EmailTemplatesEditor from "./EmailTemplatesEditor";
 import SiteContentEditor from "./SiteContentEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -101,6 +102,12 @@ const sectionConfig = [
     label: "404 page",
     description: "Fallback page copy and return action.",
     previewHref: NOT_FOUND_PREVIEW_PATH,
+  },
+  {
+    key: "emailTemplates",
+    label: "Email templates",
+    description: "Edit the HTML templates used for password reset, admin request, contact, and manual outbound emails.",
+    previewHref: PASSWORD_RESET_EMAIL_PREVIEW_PATH,
   },
 ] as const;
 
@@ -628,8 +635,8 @@ const AdminPage = () => {
 
     try {
       setIsSendingResetEmail(true);
-      await sendPasswordResetEmail(firebaseAuth, trimmedEmail);
-      toast.success("Password reset email sent.");
+      await sendCustomPasswordResetEmail(trimmedEmail);
+      toast.success("If that email belongs to an approved admin account, a reset link has been sent.");
     } catch (error) {
       console.error("Unable to send the password reset email.", error);
       toast.error(getErrorMessage(error, "Unable to send the password reset email."));
@@ -998,7 +1005,7 @@ const AdminPage = () => {
   const showAccessScreen = !showEditorWorkspace;
   const administrationTitle = showEditorWorkspace ? "Edit every page from one workspace" : "Secure admin access";
   const administrationDescription = showEditorWorkspace
-    ? "This admin panel controls the homepage and shared site shell, custom landing pages, and the 404 page."
+    ? "This admin panel controls the homepage and shared site shell, custom landing pages, the 404 page, and the outbound email templates."
     : "Only approved administrator accounts can unlock this workspace. Sign in with an allowlisted account or send a request for review.";
   const administrationPanelContent = !isFirebaseConfigured ? (
     <div className="space-y-4 rounded-[1.5rem] border border-amber-300/18 bg-amber-100/10 p-5 text-sm leading-7 text-slate-100">
@@ -1300,8 +1307,8 @@ const AdminPage = () => {
                 {showEditorWorkspace ? (
                   <Panel
                     eyebrow="Pages"
-                    title="Page views"
-                    description="Open the live page you are editing in a new tab to verify spacing, route paths, block order, and device behavior."
+                    title="Workspace views"
+                    description="Open the live page or email preview tied to the section you are editing so you can verify the output in a separate tab."
                   >
                     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                       {pageViewSections.map((section) => (
@@ -1694,9 +1701,11 @@ const AdminPage = () => {
                           ? "Add pages, edit the public URL, and drag blocks into the order you want."
                           : activeSection === "home"
                             ? "Choose a subsection, then edit that part of the home experience without scrolling the full content tree."
-                          : activeSection === "notFoundPage"
-                            ? "Set an optional route alias, apply it to the draft, then save to publish it while keeping the fixed fallback route."
-                            : "Use the add and remove controls inside list sections to build new tiles, cards, references, prompts, or links."}
+                            : activeSection === "emailTemplates"
+                              ? "Edit the raw HTML stored in Firebase, preview it live, and let the Worker use it the next time it sends an email."
+                            : activeSection === "notFoundPage"
+                              ? "Set an optional route alias, apply it to the draft, then save to publish it while keeping the fixed fallback route."
+                              : "Use the add and remove controls inside list sections to build new tiles, cards, references, prompts, or links."}
                       </div>
 
                       {activeSection === "customPages" ? (
@@ -1786,6 +1795,16 @@ const AdminPage = () => {
                             )}
                           </div>
                         </div>
+                      ) : activeSection === "emailTemplates" ? (
+                        <EmailTemplatesEditor
+                          value={draft.emailTemplates}
+                          onChange={(nextValue) =>
+                            setDraft((current) => ({
+                              ...current,
+                              emailTemplates: nextValue,
+                            }))
+                          }
+                        />
                       ) : activeSection === "notFoundPage" ? (
                         <div className="space-y-6">
                           <AdminRouteEditor
