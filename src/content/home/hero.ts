@@ -1,7 +1,8 @@
 import { withBasePath } from "@/lib/site-pages";
 import { sharedCtas } from "./cta";
 
-export const HEPA_PROFILE_DOWNLOAD_PATH = "/documents/hepa-company-profile-2026.pdf";
+export const HEPA_PROFILE_DOWNLOAD_PATH =
+  "https://raw.githubusercontent.com/FirstAidKit-hierarchy/HEPA/main/public/documents/hepa-company-profile-2026.pdf";
 export const HEPA_PROFILE_DOWNLOAD_FILENAME = "HEPA-Company-Profile-2026.pdf";
 
 export const heroContent = {
