@@ -257,6 +257,12 @@ const contactBriefChecklist = [
 
 const isRemovedHomeSectionLink = (href: string) => href.trim().toLowerCase() === "#insights";
 
+const normalizeComparableText = (value: string) => value.trim().replace(/\s+/g, " ").toLowerCase();
+
+const isLegacyDefaultHero = (hero: SiteContent["home"]["hero"]) =>
+  normalizeComparableText(hero.title.lead) === normalizeComparableText(heroContent.title.lead) &&
+  normalizeComparableText(hero.title.highlight) === normalizeComparableText(heroContent.title.highlight);
+
 const baseSiteContent = {
   siteShell: {
     navigation: {
@@ -404,9 +410,14 @@ export const normalizeSiteContent = (value: unknown): SiteContent => {
     customPages: [],
   });
   const customPagesSource = Array.isArray(source.customPages) ? source.customPages : defaultSiteContent.customPages;
+  const hero = isLegacyDefaultHero(merged.home.hero) ? cloneValue(heroContent) : merged.home.hero;
 
   return {
     ...merged,
+    home: {
+      ...merged.home,
+      hero,
+    },
     siteShell: {
       ...merged.siteShell,
       navigation: {
