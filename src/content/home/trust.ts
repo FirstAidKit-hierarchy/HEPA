@@ -48,9 +48,4 @@ export const trustContent = {
       description: "Leadership oversight and delivery capability support the move from evidence gathering to presentation-ready outputs.",
     },
   ] satisfies TrustPillar[],
-  testimonial: {
-    quote:
-      "HEPA helps teams bring local context, evidence inputs, and pricing questions into one clearer decision process.",
-    attribution: "HEPA delivery approach",
-  },
 };

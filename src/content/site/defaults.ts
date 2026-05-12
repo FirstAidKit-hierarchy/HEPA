@@ -255,10 +255,12 @@ const contactBriefChecklist = [
   "The output you need, such as a report, dashboard, survey workflow, or insight export",
 ];
 
+const isRemovedHomeSectionLink = (href: string) => href.trim().toLowerCase() === "#insights";
+
 const baseSiteContent = {
   siteShell: {
     navigation: {
-      links: navigationLinks.map((link) => ({ ...link })),
+      links: navigationLinks.filter((link) => !isRemovedHomeSectionLink(link.href)).map((link) => ({ ...link })),
       primaryCta: { ...sharedCtas.primary },
     },
     footer: {
@@ -324,7 +326,6 @@ const baseSiteContent = {
         title: pillar.title,
         description: pillar.description,
       })),
-      testimonial: { ...trustContent.testimonial },
       launchChecklist: {
         eyebrow: "What teams can expect",
         items: [
@@ -406,6 +407,13 @@ export const normalizeSiteContent = (value: unknown): SiteContent => {
 
   return {
     ...merged,
+    siteShell: {
+      ...merged.siteShell,
+      navigation: {
+        ...merged.siteShell.navigation,
+        links: merged.siteShell.navigation.links.filter((link) => !isRemovedHomeSectionLink(link.href)),
+      },
+    },
     notFoundPageRoute: {
       aliasPath: normalizeOptionalPagePath(
         isPlainObject(source.notFoundPageRoute) && typeof source.notFoundPageRoute.aliasPath === "string"

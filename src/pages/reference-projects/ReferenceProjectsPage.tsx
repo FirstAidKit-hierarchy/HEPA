@@ -101,7 +101,7 @@ const ReferenceProjectsPage = () => {
                     asChild
                     className="rounded-full border-white/15 bg-white/10 px-6 text-white hover:bg-white/14 hover:text-white"
                   >
-                    <SiteLink href="#insights">
+                    <SiteLink href="/">
                       <ArrowLeft size={16} />
                       Back to home
                     </SiteLink>

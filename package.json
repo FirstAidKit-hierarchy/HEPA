@@ -9,7 +9,6 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "sync:firebase-admin": "node ./scripts/sync-firebase-admin-env.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

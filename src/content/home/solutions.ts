@@ -12,7 +12,7 @@ type SolutionItem = {
 
 export const solutionsContent = {
   eyebrow: "Services And Platform Capabilities",
-  title: "What HEPA helps commercial and evidence teams deliver",
+  title: "What HEPA helps teams deliver",
   description:
     "Use HEPA to gather local evidence, structure pricing and access research, coordinate stakeholder input, and deliver outputs teams can act on.",
   cards: [

@@ -88,7 +88,7 @@ const sectionConfig = [
   {
     key: "home",
     label: "Home page",
-    description: "Shared site shell plus hero, service tiles, proof cards, insights, and contact sections.",
+    description: "Shared site shell plus hero, service tiles, proof cards, and contact sections.",
     previewHref: "/",
   },
   {
@@ -158,12 +158,12 @@ const homeEditorSectionConfig = [
   {
     key: "trust",
     label: "Trust",
-    description: "Trust signals, stats, testimonial, and launch checklist.",
+    description: "Trust signals, stats, and launch checklist.",
   },
   {
     key: "insights",
     label: "Insights",
-    description: "Insight cards, article previews, and editorial section copy.",
+    description: "Reference-project archive content and published-reference data.",
   },
   {
     key: "contact",

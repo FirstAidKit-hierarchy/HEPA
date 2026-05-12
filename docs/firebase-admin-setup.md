@@ -6,7 +6,7 @@ This project now supports a secure administration flow for the site-wide content
 
 Create `.env.local` in the project root for local development and copy the keys from `.env.example`.
 
-For the live site on GitHub Pages at `https://hepa.sa`, set the Firebase values in the GitHub Pages workflow environment before building or redeploying. Local Vite development still reads the `VITE_*` variables directly from `.env.local`. The `/api/firebase-config` route is only an optional fallback for separate backend-capable hosts and is not part of the GitHub Pages production path.
+For the live site on GitHub Pages at `https://hepa.sa`, set the Firebase values in the GitHub Pages workflow environment before building or redeploying. Local Vite development still reads the `VITE_*` variables directly from `.env.local`.
 
 ```env
 VITE_ADMIN_PATH=/admin
@@ -29,17 +29,7 @@ For this project, the core Firebase values are `VITE_FIREBASE_API_KEY`, `VITE_FI
 
 `VITE_ADMIN_PATH` controls the fixed admin route at build time. Set it to a non-public path you want to use for the editor, then rebuild or redeploy the site.
 
-If you also maintain a separate backend-capable deployment, the optional runtime config route accepts `NEXT_PUBLIC_FIREBASE_*` names as a fallback there. The GitHub Pages production build should still use the `VITE_*` names from the GitHub Actions workflow.
-
-The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY`. On `hepa.sa`, the admin page sends that action to the Cloudflare Worker using `VITE_ADMIN_REQUEST_EMAIL_API_URL` or `VITE_CONTACT_FORM_EMAIL_API_URL`. If you run a separate backend-capable host without the Worker URL, the legacy `/api/admin-passwords` route can still be used there.
-
-For repeatable setup, you can keep a local server-only service-account file at `firebase-service-account.local.json` and run:
-
-```bash
-npm run sync:firebase-admin
-```
-
-The script reads `.env.local` plus `firebase-service-account.local.json` and upserts the required Firebase values into the linked Vercel project. This is optional and only relevant if you are maintaining a separate backend-capable deployment in addition to GitHub Pages. The example shape is in `firebase-service-account.local.example.json`. Do not commit the real `.local.json` file.
+The owner-only password override section also needs the server-side values `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`, and `FIREBASE_API_KEY`. On `hepa.sa`, the admin page sends that action to the Cloudflare Worker using `VITE_ADMIN_REQUEST_EMAIL_API_URL` or `VITE_CONTACT_FORM_EMAIL_API_URL`.
 
 ## 2. Enable authentication providers
 
@@ -248,4 +238,4 @@ The admin panel now includes a `Password overrides` section.
 2. Only accounts with the `owner` role can use it.
 3. The owner can set a new password for any approved admin or owner account without knowing that user's current password.
 
-On `hepa.sa`, this feature is expected to work through the Cloudflare Worker backend at `POST /set-admin-password`. If you do not configure the Worker URL, the app falls back to the legacy `/api/admin-passwords` server route for separate backend-capable deployments.
+On `hepa.sa`, this feature works through the Cloudflare Worker backend at `POST /set-admin-password`.

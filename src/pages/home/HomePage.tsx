@@ -4,7 +4,6 @@ import {
   ContactSection,
   HeroSection,
   HowItWorksSection,
-  InsightsSection,
   ProductProofSection,
   SolutionsSection,
   TrustSection,
@@ -36,7 +35,6 @@ const HomePage = () => {
         <CaseStudiesSection />
         <HowItWorksSection />
         <TrustSection />
-        <InsightsSection />
         <ActionBanner {...ctaPanels.final} className="pt-0 sm:pt-2" />
         <ContactSection />
       </main>

@@ -7,8 +7,8 @@ export const HEPA_PROFILE_DOWNLOAD_FILENAME = "HEPA-Company-Profile-2026.pdf";
 export const heroContent = {
   badge: "Saudi Arabia and GCC market access and evidence support",
   title: {
-    lead: "Smarter evidence, pricing, and insight",
-    highlight: "for Saudi Arabia and GCC pharma and medtech teams",
+    lead: "Smarter Evidence, Pricing, And Insight",
+    highlight: "For Saudi Arabia and GCC Pharma and Medtech Teams",
   },
   primaryCta: sharedCtas.primary,
   downloadCta: {
@@ -18,9 +18,9 @@ export const heroContent = {
   },
   quickPoints: [
     "Local Evidence Generation",
-    "Pricing and Access research",
-    "Stakeholder surveys and expert validation",
-    "Decision-ready reports and dashboards",
+    "Pricing and Access Research",
+    "Stakeholder surveys and expert Validation",
+    "Decision-ready Reports and Dashboards",
   ],
   summaryCard: {
     eyebrow: "Who can use HEPA",
@@ -28,7 +28,7 @@ export const heroContent = {
     items: [
       {
         label: "Teams served",
-        value: "Pharma, medtech, medical affairs, Market Access, And regulatory teams",
+        value: "Pharma, Medtech, Medical Affairs, Market Access, And RegulatoryTeams",
       },
       {
         label: "Outputs",

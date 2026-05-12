@@ -1,4 +1,4 @@
-import { Database, Globe, Quote, ShieldCheck, Users, Workflow } from "lucide-react";
+import { Database, Globe, ShieldCheck, Users, Workflow } from "lucide-react";
 import { Reveal, SectionHeading } from "@/components/common";
 import { useSiteContent } from "@/components/providers";
 
@@ -56,17 +56,7 @@ const TrustSection = () => {
             })}
           </div>
 
-          <div className="space-y-5">
-            <Reveal delay={120}>
-              <article className="rounded-[1.9rem] border border-border/70 bg-card/95 p-6 shadow-[0_18px_44px_rgba(15,23,42,0.07)] sm:p-7">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/12 text-primary">
-                  <Quote size={24} />
-                </div>
-                <p className="mt-6 text-base leading-8 text-foreground">{trust.testimonial.quote}</p>
-                <p className="mt-4 text-sm font-medium text-muted-foreground">{trust.testimonial.attribution}</p>
-              </article>
-            </Reveal>
-
+          <div>
             <Reveal delay={200}>
               <article className="rounded-[1.9rem] border border-border/70 bg-background/85 p-6 shadow-[0_18px_44px_rgba(15,23,42,0.06)] sm:p-7">
                 <p className="text-sm font-semibold uppercase tracking-[0.24em] text-accent-blue">{trust.launchChecklist.eyebrow}</p>
