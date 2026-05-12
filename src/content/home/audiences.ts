@@ -10,7 +10,7 @@ type AudienceCard = {
 
 export const audiencesContent = {
   eyebrow: "Who We Help",
-  title: "Built for the teams shaping pricing, evidence, and access decisions",
+  title: "Built For the Teams Shaping Pricing, Evidence, and Access Decisions",
   description:
     "HEPA supports cross-functional healthcare teams that need local context, structured evidence, and outputs they can use internally.",
   cards: [
