@@ -8,8 +8,8 @@ export const HEPA_PROFILE_DOWNLOAD_FILENAME = "HEPA-Company-Profile-2026.pdf";
 export const heroContent = {
   badge: "Saudi Arabia and GCC market access and evidence support",
   title: {
-    lead: "Smarter Evidence, Pricing, And Insight",
-    highlight: "For Saudi Arabia and GCC Pharma and Medtech Teams",
+    lead: "Smarter Evidence, Pricing, And Insight Generation",
+    highlight: "For Saudi Arabia and GCC",
   },
   primaryCta: sharedCtas.primary,
   downloadCta: {
