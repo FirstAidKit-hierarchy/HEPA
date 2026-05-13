@@ -58,7 +58,7 @@ const HeroSection = () => {
             </div>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-[3rem] xl:text-6xl">
               {renderHeroLead(hero.title.lead)}{" "}
-              <span className="text-[#7ED957]">
+              <span className="bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-transparent">
                 {renderHeroHighlight(hero.title.highlight)}
               </span>
             </h1>
