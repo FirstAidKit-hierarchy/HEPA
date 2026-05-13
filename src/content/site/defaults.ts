@@ -268,9 +268,15 @@ const normalizeHero = (hero: SiteContent["home"]["hero"]) => {
     return cloneValue(heroContent);
   }
 
-  if (normalizeComparableText(hero.badge) === normalizeComparableText(heroContent.badge)) {
+  const isLegacyBadge = normalizeComparableText(hero.badge) === normalizeComparableText(heroContent.badge);
+  const isLegacyShortHeroTitle =
+    normalizeComparableText(hero.title.lead) === "smarter evidence, pricing, and insight" &&
+    normalizeComparableText(hero.title.highlight) === "for saudi arabia and gcc pharma and medtech teams";
+
+  if (isLegacyBadge || isLegacyShortHeroTitle) {
     return {
       ...hero,
+      title: isLegacyShortHeroTitle ? cloneValue(heroContent.title) : hero.title,
       badge: heroContent.badge,
     };
   }

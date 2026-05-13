@@ -58,7 +58,25 @@ describe("site content normalization", () => {
     expect(content.notFoundPageRoute.aliasPath).toBe("/preview-missing");
   });
 
-  it("updates the legacy default hero badge without replacing customized hero copy", () => {
+  it("normalizes legacy default hero copy casing", () => {
+    const content = normalizeSiteContent({
+      home: {
+        hero: {
+          badge: "Saudi Arabia and GCC market access and evidence support",
+          title: {
+            lead: "Smarter evidence, pricing, and Insight Generation",
+            highlight: "for Saudi Arabia and GCC",
+          },
+        },
+      },
+    });
+
+    expect(content.home.hero.badge).toBe("Saudi Arabia and GCC Market Access and Evidence Support");
+    expect(content.home.hero.title.lead).toBe("Smarter Evidence, Pricing, And Insight Generation");
+    expect(content.home.hero.title.highlight).toBe("For Saudi Arabia and GCC");
+  });
+
+  it("replaces the legacy short hero title with the default title", () => {
     const content = normalizeSiteContent({
       home: {
         hero: {
@@ -72,6 +90,7 @@ describe("site content normalization", () => {
     });
 
     expect(content.home.hero.badge).toBe("Saudi Arabia and GCC Market Access and Evidence Support");
-    expect(content.home.hero.title.lead).toBe("Smarter evidence, pricing, and insight");
+    expect(content.home.hero.title.lead).toBe("Smarter Evidence, Pricing, And Insight Generation");
+    expect(content.home.hero.title.highlight).toBe("For Saudi Arabia and GCC");
   });
 });
