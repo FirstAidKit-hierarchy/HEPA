@@ -11,6 +11,24 @@ const isLegacyHepaProfileHref = (value: string) =>
   /hepa%20company%20profile%202026/i.test(value) ||
   /hepa-company-profile-2026/i.test(value);
 
+const renderHeroLead = (value: string) => {
+  const match = value.match(/^(.*?)(Insights? Generation)(.*)$/i);
+
+  if (!match) {
+    return value;
+  }
+
+  const [, before, connectedPhrase, after] = match;
+
+  return (
+    <>
+      {before}
+      <span className="whitespace-nowrap">{connectedPhrase}</span>
+      {after}
+    </>
+  );
+};
+
 const HeroSection = () => {
   const {
     siteContent: {
@@ -46,7 +64,7 @@ const HeroSection = () => {
               {hero.badge}
             </div>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-6xl">
-              {hero.title.lead}
+              {renderHeroLead(hero.title.lead)}
               <span className="mt-3 block bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-transparent">
                 {hero.title.highlight}
               </span>

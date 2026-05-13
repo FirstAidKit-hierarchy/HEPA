@@ -259,8 +259,14 @@ const isRemovedHomeSectionLink = (href: string) => href.trim().toLowerCase() ===
 
 const normalizeComparableText = (value: string) => value.trim().replace(/\s+/g, " ").toLowerCase();
 
+const isDefaultHeroLead = (value: string) =>
+  [
+    normalizeComparableText(heroContent.title.lead),
+    "smarter evidence, pricing, and insights generation",
+  ].includes(normalizeComparableText(value));
+
 const isLegacyDefaultHero = (hero: SiteContent["home"]["hero"]) =>
-  normalizeComparableText(hero.title.lead) === normalizeComparableText(heroContent.title.lead) &&
+  isDefaultHeroLead(hero.title.lead) &&
   normalizeComparableText(hero.title.highlight) === normalizeComparableText(heroContent.title.highlight);
 
 const normalizeHero = (hero: SiteContent["home"]["hero"]) => {
@@ -270,7 +276,11 @@ const normalizeHero = (hero: SiteContent["home"]["hero"]) => {
 
   const isLegacyBadge = normalizeComparableText(hero.badge) === normalizeComparableText(heroContent.badge);
   const isLegacyShortHeroTitle =
-    normalizeComparableText(hero.title.lead) === "smarter evidence, pricing, and insight" &&
+    [
+      "smarter evidence, pricing, and insight",
+      "smarter evidence, pricing, and insights",
+      "smarter evidence, pricing, and insights generation",
+    ].includes(normalizeComparableText(hero.title.lead)) &&
     normalizeComparableText(hero.title.highlight) === "for saudi arabia and gcc pharma and medtech teams";
 
   if (isLegacyBadge || isLegacyShortHeroTitle) {

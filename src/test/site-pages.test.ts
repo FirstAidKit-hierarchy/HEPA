@@ -64,7 +64,7 @@ describe("site content normalization", () => {
         hero: {
           badge: "Saudi Arabia and GCC market access and evidence support",
           title: {
-            lead: "Smarter evidence, pricing, and Insight Generation",
+            lead: "Smarter evidence, pricing, and Insights Generation",
             highlight: "for Saudi Arabia and GCC",
           },
         },
@@ -82,7 +82,7 @@ describe("site content normalization", () => {
         hero: {
           badge: "Saudi Arabia and GCC market access and evidence support",
           title: {
-            lead: "Smarter evidence, pricing, and insight",
+            lead: "Smarter evidence, pricing, and insights",
             highlight: "for Saudi Arabia and GCC pharma and medtech teams",
           },
         },
