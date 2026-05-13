@@ -263,6 +263,21 @@ const isLegacyDefaultHero = (hero: SiteContent["home"]["hero"]) =>
   normalizeComparableText(hero.title.lead) === normalizeComparableText(heroContent.title.lead) &&
   normalizeComparableText(hero.title.highlight) === normalizeComparableText(heroContent.title.highlight);
 
+const normalizeHero = (hero: SiteContent["home"]["hero"]) => {
+  if (isLegacyDefaultHero(hero)) {
+    return cloneValue(heroContent);
+  }
+
+  if (normalizeComparableText(hero.badge) === normalizeComparableText(heroContent.badge)) {
+    return {
+      ...hero,
+      badge: heroContent.badge,
+    };
+  }
+
+  return hero;
+};
+
 const baseSiteContent = {
   siteShell: {
     navigation: {
@@ -410,7 +425,7 @@ export const normalizeSiteContent = (value: unknown): SiteContent => {
     customPages: [],
   });
   const customPagesSource = Array.isArray(source.customPages) ? source.customPages : defaultSiteContent.customPages;
-  const hero = isLegacyDefaultHero(merged.home.hero) ? cloneValue(heroContent) : merged.home.hero;
+  const hero = normalizeHero(merged.home.hero);
 
   return {
     ...merged,

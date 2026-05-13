@@ -57,4 +57,21 @@ describe("site content normalization", () => {
 
     expect(content.notFoundPageRoute.aliasPath).toBe("/preview-missing");
   });
+
+  it("updates the legacy default hero badge without replacing customized hero copy", () => {
+    const content = normalizeSiteContent({
+      home: {
+        hero: {
+          badge: "Saudi Arabia and GCC market access and evidence support",
+          title: {
+            lead: "Smarter evidence, pricing, and insight",
+            highlight: "for Saudi Arabia and GCC pharma and medtech teams",
+          },
+        },
+      },
+    });
+
+    expect(content.home.hero.badge).toBe("Saudi Arabia and GCC Market Access and Evidence Support");
+    expect(content.home.hero.title.lead).toBe("Smarter evidence, pricing, and insight");
+  });
 });
