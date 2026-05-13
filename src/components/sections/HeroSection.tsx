@@ -20,8 +20,7 @@ const connectPhrase = (value: string, phrasePattern: RegExp) =>
 const renderHeroLead = (value: string) =>
   connectPhrase(value, /Insights?\s+Generation/i);
 
-const renderHeroHighlight = (value: string) =>
-  connectPhrase(value, /For\s+Saudi\s+Arabia\s+and\s+GCC/i);
+const renderHeroHighlight = (value: string) => normalizeInlineWhitespace(value);
 
 const HeroSection = () => {
   const {
@@ -57,12 +56,9 @@ const HeroSection = () => {
             <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-sky-50 shadow-[0_10px_30px_rgba(8,15,28,0.18)]">
               {hero.badge}
             </div>
-            <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-6xl">
-              {renderHeroLead(hero.title.lead)}
-              <span
-                className="mt-3 block bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text leading-tight text-transparent"
-                style={{ fontSize: "clamp(1.8rem, 2.7vw, 2.3rem)", whiteSpace: "nowrap" }}
-              >
+            <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-[3rem] xl:text-6xl">
+              {renderHeroLead(hero.title.lead)}{" "}
+              <span className="text-[#7ED957]">
                 {renderHeroHighlight(hero.title.highlight)}
               </span>
             </h1>
