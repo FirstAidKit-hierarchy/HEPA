@@ -12,6 +12,7 @@ const isLegacyHepaProfileHref = (value: string) =>
   /hepa-company-profile-2026/i.test(value);
 
 const normalizeInlineWhitespace = (value: string) => value.replace(/\s+/g, " ");
+const withNonBreakingSpaces = (value: string) => normalizeInlineWhitespace(value).replace(/ /g, "\u00A0");
 
 const renderConnectedPhrase = (value: string, phrasePattern: RegExp) => {
   const match = value.match(phrasePattern);
@@ -25,7 +26,7 @@ const renderConnectedPhrase = (value: string, phrasePattern: RegExp) => {
   return (
     <>
       {before}
-      <span className="whitespace-nowrap">{normalizeInlineWhitespace(connectedPhrase)}</span>
+      <span className="whitespace-nowrap">{withNonBreakingSpaces(connectedPhrase)}</span>
       {after}
     </>
   );
@@ -73,7 +74,7 @@ const HeroSection = () => {
             </div>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-6xl">
               {renderHeroLead(hero.title.lead)}
-              <span className="mt-3 block bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-[clamp(2.45rem,4.7vw,3.25rem)] leading-tight text-transparent">
+              <span className="mt-3 block bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-[clamp(2rem,4vw,3rem)] leading-tight text-transparent lg:text-[clamp(1.75rem,3vw,2.4rem)] xl:text-[clamp(2rem,3.2vw,3rem)]">
                 {renderHeroHighlight(hero.title.highlight)}
               </span>
             </h1>
