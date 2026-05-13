@@ -11,8 +11,10 @@ const isLegacyHepaProfileHref = (value: string) =>
   /hepa%20company%20profile%202026/i.test(value) ||
   /hepa-company-profile-2026/i.test(value);
 
-const renderHeroLead = (value: string) => {
-  const match = value.match(/^(.*?)(Insights? Generation)(.*)$/i);
+const normalizeInlineWhitespace = (value: string) => value.replace(/\s+/g, " ");
+
+const renderConnectedPhrase = (value: string, phrasePattern: RegExp) => {
+  const match = value.match(phrasePattern);
 
   if (!match) {
     return value;
@@ -23,11 +25,17 @@ const renderHeroLead = (value: string) => {
   return (
     <>
       {before}
-      <span className="whitespace-nowrap">{connectedPhrase}</span>
+      <span className="whitespace-nowrap">{normalizeInlineWhitespace(connectedPhrase)}</span>
       {after}
     </>
   );
 };
+
+const renderHeroLead = (value: string) =>
+  renderConnectedPhrase(value, /^(.*?)(Insights?\s+Generation)(.*)$/i);
+
+const renderHeroHighlight = (value: string) =>
+  renderConnectedPhrase(value, /^(.*?)(For\s+Saudi\s+Arabia\s+and\s+GCC)(.*)$/i);
 
 const HeroSection = () => {
   const {
@@ -65,8 +73,8 @@ const HeroSection = () => {
             </div>
             <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-6xl">
               {renderHeroLead(hero.title.lead)}
-              <span className="mt-3 block bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-transparent">
-                {hero.title.highlight}
+              <span className="mt-3 block bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-[clamp(2.45rem,4.7vw,3.25rem)] leading-tight text-transparent">
+                {renderHeroHighlight(hero.title.highlight)}
               </span>
             </h1>
             <div className="mt-8 flex flex-col gap-4 sm:items-start">
