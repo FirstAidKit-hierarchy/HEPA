@@ -29,7 +29,7 @@ export const heroContent = {
     items: [
       {
         label: "Teams served",
-        value: "Pharma, Medtech, Medical Affairs, Market Access, And RegulatoryTeams",
+        value: "Pharma, Medtech, Medical Affairs, Market Access, And Regulatory Teams",
       },
       {
         label: "Outputs",

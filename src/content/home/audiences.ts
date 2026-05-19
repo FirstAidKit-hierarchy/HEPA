@@ -19,7 +19,7 @@ export const audiencesContent = {
       title: "Pharma",
       who: "Brand, launch, and portfolio teams preparing products for GCC markets.",
       help: "HEPA helps structure pricing research, stakeholder input, and market-specific evidence planning.",
-      Outcome: "Clearer launch and access direction for internal decision-making.",
+      outcome: "Clearer launch and access direction for internal decision-making.",
     },
     {
       icon: Activity,
