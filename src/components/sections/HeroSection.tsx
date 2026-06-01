@@ -1,15 +1,7 @@
-import { CheckCircle2, Download } from "lucide-react";
-import { HEPA_PROFILE_DOWNLOAD_FILENAME, HEPA_PROFILE_DOWNLOAD_PATH } from "@/content/home";
+import { CheckCircle2 } from "lucide-react";
 import { ActionButtons, Reveal } from "@/components/common";
 import { useSiteContent } from "@/components/providers";
-import { Button } from "@/components/ui/button";
 import PartnersSection from "@/components/sections/PartnersSection";
-import { resolveAppHref, withBasePath } from "@/lib/site-pages";
-
-const isLegacyHepaProfileHref = (value: string) =>
-  /hepa(?:[-%\s]+company)?[-%\s]+profile[-%\s]+2026/i.test(value) ||
-  /hepa%20company%20profile%202026/i.test(value) ||
-  /hepa-company-profile-2026/i.test(value);
 
 const normalizeInlineWhitespace = (value: string) => value.replace(/\s+/g, " ");
 const withNonBreakingSpaces = (value: string) => normalizeInlineWhitespace(value).replace(/ /g, "\u00A0");
@@ -28,13 +20,6 @@ const HeroSection = () => {
       home: { hero },
     },
   } = useSiteContent();
-  const rawDownloadHref = hero.downloadCta.href?.trim() ?? "";
-  const resolvedDownloadHref = !rawDownloadHref
-    ? withBasePath(HEPA_PROFILE_DOWNLOAD_PATH)
-    : isLegacyHepaProfileHref(rawDownloadHref)
-      ? withBasePath(HEPA_PROFILE_DOWNLOAD_PATH)
-      : resolveAppHref(rawDownloadHref);
-  const resolvedDownloadName = hero.downloadCta.download?.trim() || HEPA_PROFILE_DOWNLOAD_FILENAME;
 
   return (
     <section id="home" className="relative overflow-hidden pt-16">
@@ -64,17 +49,6 @@ const HeroSection = () => {
             </h1>
             <div className="mt-8 flex flex-col gap-4 sm:items-start">
               <ActionButtons primaryCta={hero.primaryCta} primaryClassName="w-full sm:w-auto" />
-              <Button
-                variant="outline"
-                size="lg"
-                asChild
-                className="w-full border-white/35 bg-white/[0.03] text-white hover:border-white hover:bg-white hover:text-slate-950 sm:w-auto"
-              >
-                <a href={resolvedDownloadHref} download={resolvedDownloadName}>
-                  <Download size={18} />
-                  {hero.downloadCta.label}
-                </a>
-              </Button>
             </div>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               {hero.quickPoints.map((point, index) => (
