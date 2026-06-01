@@ -1,4 +1,4 @@
-import { Activity, BarChart3, FlaskConical, Pill, ShieldCheck, type LucideIcon } from "lucide-react";
+import { Activity, Pill, type LucideIcon } from "lucide-react";
 
 type AudienceCard = {
   icon: LucideIcon;
@@ -27,27 +27,6 @@ export const audiencesContent = {
       who: "Device teams navigating market access, value communication, and clinical-commercial alignment.",
       help: "HEPA helps convert local workflow insight and access barriers into decision-ready reports and dashboards.",
       outcome: "Stronger market entry and access planning support.",
-    },
-    {
-      icon: FlaskConical,
-      title: "Medical Affairs",
-      who: "Teams responsible for evidence planning, insight generation, and scientific support.",
-      help: "HEPA helps organize surveys, local evidence inputs, and report structures for internal and external use.",
-      outcome: "More structured evidence generation and communication workflows.",
-    },
-    {
-      icon: BarChart3,
-      title: "Market Access",
-      who: "Access and pricing teams working through reimbursement pathways and stakeholder needs.",
-      help: "HEPA helps map local decision-makers, capture pricing insight, and package findings into actionable outputs.",
-      outcome: "Better-informed access discussions and planning.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Regulatory Teams",
-      who: "Teams coordinating local requirements, evidence readiness, and submission support.",
-      help: "HEPA helps align local market input, documentation workflows, and stakeholder context around the product question.",
-      outcome: "Cleaner handoffs between evidence, access, and regulatory planning.",
     },
   ] satisfies AudienceCard[],
 };

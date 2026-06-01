@@ -1,11 +1,8 @@
 import { Footer, Navbar, PageLoader } from "@/components/layout";
 import {
-  CaseStudiesSection,
   ContactSection,
   HeroSection,
-  HowItWorksSection,
   SolutionsSection,
-  TrustSection,
   WhoWeHelpSection,
 } from "@/components/sections";
 import { ActionBanner } from "@/components/common";
@@ -30,10 +27,6 @@ const HomePage = () => {
         <WhoWeHelpSection />
         <SolutionsSection />
         <ActionBanner {...ctaPanels.capabilities} />
-        <CaseStudiesSection />
-        <HowItWorksSection />
-        <TrustSection />
-        <ActionBanner {...ctaPanels.final} className="pt-0 sm:pt-2" />
         <ContactSection />
       </main>
       <Footer />

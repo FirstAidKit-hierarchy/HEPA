@@ -255,7 +255,13 @@ const contactBriefChecklist = [
   "The output you need, such as a report, dashboard, survey workflow, or insight export",
 ];
 
-const isRemovedHomeSectionLink = (href: string) => href.trim().toLowerCase() === "#insights";
+const removedHomeSectionLinks = new Set(["#insights"]);
+
+const isRemovedHomeSectionLink = (href: string) => removedHomeSectionLinks.has(href.trim().toLowerCase());
+
+const removedAudienceCardTitles = new Set(["medical affairs", "market access", "regulatory teams"]);
+
+const isRemovedAudienceCard = (title: string) => removedAudienceCardTitles.has(normalizeComparableText(title));
 
 const normalizeComparableText = (value: string) => value.trim().replace(/\s+/g, " ").toLowerCase();
 
@@ -318,13 +324,15 @@ const baseSiteContent = {
       eyebrow: audiencesContent.eyebrow,
       title: audiencesContent.title,
       description: audiencesContent.description,
-      cards: audiencesContent.cards.map((card) => ({
-        iconKey: audienceIconKeyMap.get(card.icon) ?? "pill",
-        title: card.title,
-        who: card.who,
-        help: card.help,
-        outcome: card.outcome,
-      })),
+      cards: audiencesContent.cards
+        .filter((card) => !isRemovedAudienceCard(card.title))
+        .map((card) => ({
+          iconKey: audienceIconKeyMap.get(card.icon) ?? "pill",
+          title: card.title,
+          who: card.who,
+          help: card.help,
+          outcome: card.outcome,
+        })),
     },
     solutions: {
       eyebrow: solutionsContent.eyebrow,
@@ -448,6 +456,10 @@ export const normalizeSiteContent = (value: unknown): SiteContent => {
     home: {
       ...merged.home,
       hero,
+      audiences: {
+        ...merged.home.audiences,
+        cards: merged.home.audiences.cards.filter((card) => !isRemovedAudienceCard(card.title)),
+      },
     },
     siteShell: {
       ...merged.siteShell,

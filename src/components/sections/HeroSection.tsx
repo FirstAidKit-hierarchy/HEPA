@@ -22,7 +22,7 @@ const HeroSection = () => {
   } = useSiteContent();
 
   return (
-    <section id="home" className="relative overflow-hidden pt-16">
+    <section id="home" className="relative min-h-screen overflow-hidden pt-16">
       <div
         className="absolute inset-0"
         style={{
@@ -35,13 +35,13 @@ const HeroSection = () => {
       <div className="absolute top-20 right-0 h-[500px] w-[500px] rounded-full bg-[#2B8ABF]/16 blur-3xl" />
       <div className="absolute bottom-10 left-0 h-[300px] w-[300px] rounded-full bg-[#7ED957]/10 blur-3xl" />
       <div className="absolute top-1/3 left-1/4 h-[200px] w-[200px] rounded-full bg-[#2B8ABF]/12 blur-3xl" />
-      <div className="section-container relative z-10 py-16 pb-44 sm:py-20 sm:pb-48 lg:py-28 lg:pb-52">
+      <div className="section-container relative z-10 py-10 pb-36 sm:py-14 sm:pb-40 lg:flex lg:min-h-[calc(100vh-4rem)] lg:items-center lg:py-20 lg:pb-36">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] lg:items-center lg:gap-12">
           <Reveal className="max-w-3xl">
             <div className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-sm font-medium text-sky-50 shadow-[0_10px_30px_rgba(8,15,28,0.18)]">
               {hero.badge}
             </div>
-            <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-[3rem] xl:text-6xl">
+            <h1 className="mt-6 text-4xl font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_10px_35px_rgba(8,15,28,0.24)] sm:text-5xl lg:text-[2.85rem] xl:text-[3.35rem]">
               {renderHeroLead(hero.title.lead)}{" "}
               <span className="bg-gradient-to-r from-[#7ED957] via-[#B9F58A] to-[#F0FDF4] bg-clip-text text-transparent">
                 {renderHeroHighlight(hero.title.highlight)}

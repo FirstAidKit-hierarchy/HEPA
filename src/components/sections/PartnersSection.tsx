@@ -53,7 +53,7 @@ const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
   if (embedded) {
     return (
       <Reveal className="w-full">
-        <div className="section-container pb-4">
+        <div className="section-container pb-2">
           <div className="text-center">
             <p className="partner-marquee-overline text-[0.68rem] font-semibold uppercase tracking-[0.34em] sm:text-[0.72rem]">
               {partnersSection.embeddedEyebrow}
@@ -73,15 +73,15 @@ const PartnersSection = ({ embedded = false }: PartnersSectionProps) => {
                       key={`${partner.name}-${index}`}
                       className={`partner-marquee-item group flex items-center justify-center rounded-2xl transition-all duration-500 ${
                         hasLogo
-                          ? "partner-marquee-logo-item h-16 min-w-[11rem] px-3 sm:h-[5rem] sm:min-w-[12rem] sm:px-4"
-                          : "h-18 min-w-[13rem] px-7 sm:h-[5.5rem] sm:min-w-[15rem]"
+                          ? "partner-marquee-logo-item h-12 min-w-[9.5rem] px-3 sm:h-14 sm:min-w-[10.5rem] sm:px-4"
+                          : "h-14 min-w-[11rem] px-6 sm:h-16 sm:min-w-[12.5rem]"
                       }`}
                     >
                       {hasLogo ? (
                         renderPartnerLogo(
                           partner,
                           partner.embeddedFrameClassName ??
-                            "flex h-10 w-[9.5rem] items-center justify-center sm:h-12 sm:w-[10.5rem]",
+                            "flex h-8 w-[8.5rem] items-center justify-center sm:h-10 sm:w-[9.5rem]",
                           "partner-marquee-logo h-full w-full origin-center object-center transition-transform duration-500",
                           isDark,
                         )

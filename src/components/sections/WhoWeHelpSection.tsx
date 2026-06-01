@@ -35,14 +35,14 @@ const WhoWeHelpSection = () => {
           <SectionHeading eyebrow={audiences.eyebrow} title={audiences.title} description={audiences.description} />
         </Reveal>
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
+        <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-2">
           {audiences.cards.map((card, index) => {
             const accent = accentStyles[index % accentStyles.length];
             const Icon = audienceIcons[card.iconKey as keyof typeof audienceIcons] ?? Pill;
 
             return (
               <Reveal key={card.title} delay={index * 80}>
-                <article className="group h-full overflow-hidden rounded-[1.85rem] border border-border/70 bg-card/90 p-6 shadow-[0_18px_42px_rgba(15,23,42,0.06)] transition-all duration-500 hover:-translate-y-1 hover:border-accent-blue/20 hover:shadow-[0_28px_62px_rgba(15,23,42,0.1)]">
+                <article className="group h-full overflow-hidden rounded-[1.85rem] border border-border/70 bg-card/90 p-6 shadow-[0_18px_42px_rgba(15,23,42,0.06)] transition-all duration-500 hover:-translate-y-1 hover:border-accent-blue/20 hover:shadow-[0_28px_62px_rgba(15,23,42,0.1)] sm:p-8">
                   <div className={`inline-flex rounded-2xl p-3 ${accent.iconWrap}`}>
                     <Icon size={24} />
                   </div>

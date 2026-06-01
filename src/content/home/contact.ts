@@ -12,7 +12,7 @@ type ContactAction = {
 
 export const contactContent = {
   eyebrow: "Start The Conversation",
-  title: "Talk to HEPA about a pricing, access, or evidence question",
+  title: "Talk to HEPA about a pricing, access, or evidence ",
   description:
     "Share the team you support, the decision you are working toward, and the type of output you need. We will use the details to route the conversation and recommend the right next step.",
   contactItems: [
