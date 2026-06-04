@@ -1,3 +1,4 @@
+export { default as AnnouncementPopup } from "./AnnouncementPopup";
 export { default as ActionBanner } from "./ActionBanner";
 export { default as ActionButtons } from "./ActionButtons";
 export { default as ProductPreviewCard } from "./ProductPreviewCard";
