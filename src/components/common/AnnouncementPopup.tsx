@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
-const DISMISSED_STORAGE_KEY = "hepa-linkedin-post-popup-dismissed";
 const CAMPAIGN_END_AT = new Date("2026-07-04T23:59:59+03:00").getTime();
 const HIDDEN_PATH_PREFIXES = ["/admin", "/password-reset", "/password-reset-email-preview", "/404-preview"];
 
@@ -22,12 +21,10 @@ const AnnouncementPopup = () => {
       return;
     }
 
-    const wasDismissed = window.localStorage.getItem(DISMISSED_STORAGE_KEY) === "true";
-    setOpen(!wasDismissed);
+    setOpen(true);
   }, [hiddenOnRoute]);
 
   const closePopup = () => {
-    window.localStorage.setItem(DISMISSED_STORAGE_KEY, "true");
     setOpen(false);
   };
 
