@@ -49,11 +49,21 @@ const AnnouncementPopup = () => {
             <X size={28} strokeWidth={2.6} />
           </button>
 
-          <img
-            src="/HEPA%20Linkedin%20Post.pdf.svg"
-            alt="HEPA LinkedIn post"
-            className="block max-h-[calc(100vh-8rem)] w-full object-contain"
-          />
+          <object
+            data="/HEPA%20Linkedin%20Post.pdf#toolbar=0&navpanes=0&scrollbar=0"
+            type="application/pdf"
+            aria-label="HEPA LinkedIn post"
+            className="block aspect-[1/1.08] max-h-[calc(100vh-8rem)] w-full"
+          >
+            <a
+              href="/HEPA%20Linkedin%20Post.pdf"
+              target="_blank"
+              rel="noreferrer"
+              className="flex min-h-[20rem] items-center justify-center p-6 text-center text-sm font-semibold text-accent-blue"
+            >
+              Open HEPA LinkedIn post
+            </a>
+          </object>
         </section>
       </div>
     )
