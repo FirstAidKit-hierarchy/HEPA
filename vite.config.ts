@@ -1,4 +1,4 @@
-import { writeFile, copyFile } from "node:fs/promises";
+import { writeFile, copyFile, mkdir } from "node:fs/promises";
 import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -41,8 +41,11 @@ const githubPagesSpaFallback = (): Plugin => ({
   async closeBundle() {
     const distDir = path.resolve(__dirname, "dist");
     const indexPath = path.join(distDir, "index.html");
+    const expertConfirmationRouteDir = path.join(distDir, "expert-confirmation", "anito-cel-ksa");
 
     await copyFile(indexPath, path.join(distDir, "404.html"));
+    await mkdir(expertConfirmationRouteDir, { recursive: true });
+    await copyFile(indexPath, path.join(expertConfirmationRouteDir, "index.html"));
     await writeFile(path.join(distDir, ".nojekyll"), "");
   },
 });
