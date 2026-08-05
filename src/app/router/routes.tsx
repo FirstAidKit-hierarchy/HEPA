@@ -1,12 +1,14 @@
 import { lazy, Suspense } from "react";
 import { HomePage, NotFoundPage } from "@/pages";
 import { ADMIN_PAGE_PATH } from "@/pages/admin/config";
+import { EXPERT_CONFIRMATION_PATH } from "@/pages/expert-confirmation/config";
 import { NOT_FOUND_PREVIEW_PATH } from "@/pages/not-found/config";
 import { PASSWORD_RESET_EMAIL_PREVIEW_PATH } from "@/pages/password-reset-email-preview/config";
 import { PASSWORD_RESET_PATH } from "@/pages/password-reset/config";
 import { REFERENCE_PROJECTS_PATH } from "@/pages/reference-projects/config";
 
 const AdminPage = lazy(() => import("@/pages/admin/AdminPage"));
+const ExpertConfirmationPage = lazy(() => import("@/pages/expert-confirmation/ExpertConfirmationPage"));
 const PasswordResetEmailPreviewPage = lazy(
   () => import("@/pages/password-reset-email-preview/PasswordResetEmailPreviewPage"),
 );
@@ -40,6 +42,14 @@ export const appRoutes = [
     element: (
       <Suspense fallback={null}>
         <PasswordResetEmailPreviewPage />
+      </Suspense>
+    ),
+  },
+  {
+    path: `${EXPERT_CONFIRMATION_PATH}/:projectSlug`,
+    element: (
+      <Suspense fallback={null}>
+        <ExpertConfirmationPage />
       </Suspense>
     ),
   },
